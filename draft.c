@@ -1,7 +1,7 @@
 #include "fables.h"
 #include "base.h"
 #include "declare.h"
-#include "draw.h"
+//#include "draw.h" 原本有東西但現在是空的所以comment掉
 #include "cards.h"
 typedef struct {
     const char *txt;
