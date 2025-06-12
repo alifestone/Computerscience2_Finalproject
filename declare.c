@@ -1,52 +1,8 @@
-#ifndef FABLES_H_INCLUDED
-#define FABLES_H_INCLUDED
-#include "base.h"
-
-typedef struct {
-    char name[50];
-    SDL_Color Piece;
-    int32_t health;
-    int32_t energy;
-    int32_t defense;
-    int32_t epic_threshold;
-    int32_t lane;       //0, 1, or 2
-    Deck skill[3];  //技能牌庫
-    Card epic[3];
-} Fable;
-
-typedef struct {
-    Fable *fable;
-    Deck draw;          //牌庫（抽牌區）
-    Deck disc;          //棄牌區
-    Deck bani;          //出牌區
-    Deck hand;          //手牌
-    Deck twist;         //反轉牌區
-} Player;
-
-Card potshot={
-    .name="Pot Shot",
-    .type=SKILL_ATK,
-    .cst=0,
-    .dmg=1,
-    .defense=0,
-    .mov=0,
-    .rng=1,
-    .link=true,
-    .effect=NULL //請填入效果函式
-};
-Card crackshot={
-    .name="Crack Shot",
-    .type=SKILL_ATK,
-    .cst=2,
-    .dmg=2,
-    .defense=0,
-    .mov=0,
-    .rng=2,
-    .link=true,
-    .effect=NULL //請填入效果函式
-};
+#include "declare.h"
+Card potshot={"Pot\nShot",SKILL_ATK,0,1,0,0,1,true,NULL};
+Card crackshot={"Crack\nShot",SKILL_ATK,2,2,,,2,true,NULL};
 Card overdrive_burn={
-    .name="Overdrive Burn",
+    .name="Overdrive\nBurn",
     .type=SKILL_ATK,
     .cst=0,
     .dmg=0,
@@ -57,7 +13,7 @@ Card overdrive_burn={
     .effect=NULL //請填入效果函式
 };
 Card sniper_shot={
-    .name="Sniper Shot",
+    .name="Sniper\nShot",
     .type=SKILL_ATK,
     .cst=4,
     .dmg=3,
@@ -67,8 +23,8 @@ Card sniper_shot={
     .link=true,
     .effect=NULL //請填入效果函式
 };
-Card onboard_cacheA={
-    .name="Onboard Cache",
+Card onboard_cache={
+    .name="Onboard\nCache",
     .type=SKILL_ATK,
     .cst=1,
     .dmg=0,
@@ -79,7 +35,7 @@ Card onboard_cacheA={
     .effect=NULL //請填入效果函式
 };
 Card energy_shield={
-    .name="Energy Shield",
+    .name="Energy\nShield",
     .type=SKILL_DEF,
     .cst=1,
     .dmg=0,
@@ -90,7 +46,7 @@ Card energy_shield={
     .effect=NULL //請填入效果函式
 };
 Card electrified_shield={
-    .name="Electrified Shield",
+    .name="Electrified\nShield",
     .type=SKILL_DEF,
     .cst=2,
     .dmg=0,
@@ -101,7 +57,7 @@ Card electrified_shield={
     .effect=NULL //請填入效果函式
 };
 Card hooded_system={
-    .name="Hooded System",
+    .name="Hooded\nSystem",
     .type=SKILL_DEF,
     .cst=1,
     .dmg=0,
@@ -112,7 +68,7 @@ Card hooded_system={
     .effect=NULL //請填入效果函式
 };
 Card omega_shield={
-    .name="Omega Shield",
+    .name="Omega\nShield",
     .type=SKILL_DEF,
     .cst=3,
     .dmg=0,
@@ -122,19 +78,8 @@ Card omega_shield={
     .link=false,
     .effect=NULL //請填入效果函式
 };
-Card onboard_cacheD={
-    .name="Onboard Cache",
-    .type=SKILL_DEF,
-    .cst=1,
-    .dmg=0,
-    .defense=0,
-    .mov=0,
-    .rng=0,
-    .link=false,
-    .effect=NULL //請填入效果函式
-};
 Card unleashed_ballistics={
-    .name="Unleashed Ballistics",
+    .name="Unleashed\nBallistics",
     .type=SKILL_MOV,
     .cst=1,
     .dmg=0,
@@ -145,7 +90,7 @@ Card unleashed_ballistics={
     .effect=NULL //請填入效果函式
 };
 Card unleashed_firepower={
-    .name="Unleashed Firepower",
+    .name="Unleashed\nFirepower",
     .type=SKILL_MOV,
     .cst=2,
     .dmg=0,
@@ -156,7 +101,7 @@ Card unleashed_firepower={
     .effect=NULL //請填入效果函式
 };
 Card transformed_senses={
-    .name="Transformed Senses",
+    .name="Transformed\nSenses",
     .type=SKILL_MOV,
     .cst=1,
     .dmg=0,
@@ -167,7 +112,7 @@ Card transformed_senses={
     .effect=NULL //請填入效果函式
 };
 Card unleashed_fury={
-    .name="Unleashed Fury",
+    .name="Unleashed\nFury",
     .type=SKILL_MOV,
     .cst=3,
     .dmg=0,
@@ -177,36 +122,24 @@ Card unleashed_fury={
     .link=false,
     .effect=NULL //請填入效果函式
 };
-Card onboard_cacheM={
-    .name="Onboard Cache",
-    .type=SKILL_MOV,
-    .cst=1,
-    .dmg=0,
-    .defense=0,
-    .mov=0,
-    .rng=0,
-    .link=false,
-    .effect=NULL //請填入效果函式
-};
 Fable red_hood={
     .name="Red Riding Hood",
     .Piece={255, 0, 0, 255},
     .health=30,
-    .energy=0,
-    .defense=0,
+    .energy=25,
+    .defense=6,
     .epic_threshold=15,
     .lane=0,
     .skill[0]={
-        .cards={&potshot, &crackshot, &overdrive_burn, &sniper_shot, &onboard_cacheA},
+        .cards={&potshot, &crackshot, &overdrive_burn, &sniper_shot, &onboard_cache},
         .cnt=5
     },
     .skill[1]={
-        .cards={&energy_shield, &electrified_shield, &hooded_system, &omega_shield, &onboard_cacheD},
+        .cards={&energy_shield, &electrified_shield, &hooded_system, &omega_shield, &onboard_cache},
         .cnt=5
     },
     .skill[2]={
-        .cards={&unleashed_ballistics, &unleashed_firepower, &transformed_senses, &unleashed_fury, &onboard_cacheM},
+        .cards={&unleashed_ballistics, &unleashed_firepower, &transformed_senses, &unleashed_fury, &onboard_cache},
         .cnt=5
     },
 };
-#endif
