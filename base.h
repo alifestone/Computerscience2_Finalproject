@@ -12,10 +12,12 @@
 #include<SDL2/SDL_ttf.h>
 #include<SDL2/SDL2_gfxPrimitives.h>
 #define MAX_CARD 100
-#define WCARD 100
-#define HCARD 140
+#define WCARD 200
+#define HCARD 280
 #define WSCREEN 1920
 #define HSCREEN 1080
+#define WField 100
+#define HField 140
 #define HAND_SIZE 5
 #define XCENTER 960
 #define YCENTER 540
@@ -54,4 +56,28 @@ typedef struct{
     Deck Defense;
     Deck Move;
 }FableShop;
+
+typedef struct {
+    char name[50];
+    SDL_Color Piece;
+    int32_t health;
+    int32_t energy;
+    int32_t defense;
+    int32_t epic_threshold;
+    int32_t lane;       //0, 1, or 2
+    Deck skill[3];  //技能牌庫
+    Card epic[3];
+} Fable;
+
+typedef struct {
+    Fable *fable;
+    int health;
+    int power;
+    int defense;
+    Deck draw;          //牌庫（抽牌區）
+    Deck disc;          //棄牌區
+    Deck bani;          //出牌區
+    Deck hand;          //手牌
+    Deck twist;         //反轉牌區
+} Player;
 #endif
