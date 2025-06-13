@@ -37,6 +37,7 @@ typedef enum {
 typedef struct {
     char name[50];
     Type type;
+    int val;
     int32_t cst;        // energy cost
     int32_t dmg;        // for attack
     int32_t defense;        // for defense
@@ -74,6 +75,7 @@ typedef struct {
     int health;
     int power;
     int defense;
+    int pos;
     Deck draw;          //牌庫（抽牌區）
     Deck disc;          //棄牌區
     Deck bani;          //出牌區
