@@ -142,4 +142,9 @@ Fable red_hood={
         .cards={&unleashed_ballistics, &unleashed_firepower, &transformed_senses, &unleashed_fury, &onboard_cache},
         .cnt=5
     },
+    .epic={
+        {"The Wolf Consumes", EPIC,0,0,0,0,0,0,false,NULL},
+        {"System Hack",EPIC,0,0,0,0,0,0,false,NULL},
+        {"Raining Vengeance",EPIC,0,0,3,0,3,3,false,NULL}
+    }
 };
