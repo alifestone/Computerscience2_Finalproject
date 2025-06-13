@@ -1,6 +1,6 @@
 #include "declare.h"
 Card potshot={"Pot\nShot",SKILL_ATK,0,1,0,0,1,true,NULL};
-Card crackshot={"Crack\nShot",SKILL_ATK,2,2,,,2,true,NULL};
+Card crackshot={"Crack\nShot",SKILL_ATK,2,2,0,0,2,true,NULL};
 Card overdrive_burn={
     .name="Overdrive\nBurn",
     .type=SKILL_ATK,
