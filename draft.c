@@ -1,5 +1,5 @@
 #include "base.h"
-#include "declare.h"
+#include "red_hood.h"
 #include "cards.h"
 typedef struct {
     const char *txt;
