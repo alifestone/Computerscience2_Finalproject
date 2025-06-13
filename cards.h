@@ -1,7 +1,7 @@
 #ifndef CARDS_H_INCLUDED
 #define CARDS_H_INCLUDED
 #include "base.h"
-#include "red_hood.h"
+#include "declare.h"
 //-------------------- 機制 --------------------
 void add_deck(Deck *deck, Card *card);
 
