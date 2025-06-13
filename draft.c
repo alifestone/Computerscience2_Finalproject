@@ -205,7 +205,7 @@ void BattleScreen(SDL_Renderer *ren,Player *p1,Player *p2){
     SDL_Delay(2000); // Pause to show the result
     battle_setup(p1,p2,first_player);
     int p1discardindex=0, p2discardindex=0;
-    int epic_selected=0;
+    int p1_epic_selected=0,p2_epic_selected=0;
     while(inbattle){
         while(SDL_PollEvent(&e)){
             if(e.type==SDL_QUIT){
@@ -218,24 +218,37 @@ void BattleScreen(SDL_Renderer *ren,Player *p1,Player *p2){
                 //end phase
                 if(SDL_PointInRect(&(SDL_Point){mx,my},&rect)){
                     printf("Ending turn.\n");
-                    for(int i=0;i<p1->hand.cnt;i++){
-                        p1->hand=NULL;
+                    if(turn%2==1) {
+                        for(int i=0;i<p1->hand.cnt;i++){
+                            p1->hand.cards[i]=NULL;
+                        }
+                        p1->hand.cnt=0;
+                        draw_hand(p1,6);
+                        p1->power=0;
+                    }    
+                    if(turn%2==0) {
+                        for(int i=0;i<p2->hand.cnt;i++){
+                            p2->hand.cards[i]=NULL;
+                        }
+                        p2->hand.cnt=0;
+                        draw_hand(p2,6);
+                        p2->power=0;
                     }
-                    for(int i=0;i<p2->hand.cnt;i++){
-                        p2->hand=NULL;
-                    }
-                    p1->hand.cnt=0;
-                    p2->hand.cnt=0;
-                    p1->hand.cards[i]=draw_hand(p1,6);
-                    p2->hand.cards[i]=draw_hand(p2,6);
-                    if(turn%2==1) p1->power=0;
-                    if(turn%2==0) p2->power=0;
                     turn++;
                     break;
                 }
+                if(p1_epic_selected==0){
+                    for(int i=0;i<3;i++){
+                        SDL_Rect epic_rect={50, HSCREEN-(300+i*70), 300, 50};
+                        if(SDL_PointInRect(&(SDL_Point){mx,my},&epic_rect)&&turn%2==1&&p1->health<=p1->fable->epic_threshold){
+                            p1_epic_selected=i+1;
+                            break;
+                        }
+                    }
+                }
                 // p1 hand
                 for(int i=0;i<p1->hand.cnt;i++){
-                    int32_t x=50+i*(WCARD+20), y=HSCREEN-HCARD-40;
+                    int32_t x=50+i*(WCARD+20), y=HSCREEN-HCARD+40;
                     SDL_Rect rect={x,y,WCARD,HCARD};
                     Card *linkholder=NULL;
                     if(SDL_PointInRect(&(SDL_Point){mx,my},&rect)&&turn%2==1){
@@ -277,7 +290,7 @@ void BattleScreen(SDL_Renderer *ren,Player *p1,Player *p2){
                                         SDL_Rect move_rect = {XCENTER + j * (WField + 20)-20, YCENTER - 20, 40, 40};
                                         if (SDL_PointInRect(&(SDL_Point){mx, my}, &move_rect)) {
                                             picked = j;
-                                            if (picked != p2->pos) {
+                                            if (picked != p2->pos|| picked != p1->pos) {
                                                 p1->pos = picked;
                                                 p1->power += p1->hand.cards[i]->val;
                                                 //discard
@@ -361,20 +374,141 @@ void BattleScreen(SDL_Renderer *ren,Player *p1,Player *p2){
                         }   
                     }
                 }
+                if(p2_epic_selected==0){
+                    for(int i=0;i<3;i++){
+                        SDL_Rect epic_rect={WSCREEN-370, 280+(i*70), 300, 50};
+                        if(SDL_PointInRect(&(SDL_Point){mx,my},&epic_rect)&&turn%2==0&&p2->health<=p2->fable->epic_threshold){
+                            p2_epic_selected=i+1;
+                            break;
+                        }
+                    }
+                }
                 // p2 hand
                 for(int i=0;i<p2->hand.cnt;i++){
                     int32_t x=WSCREEN-(50+(i+1)*(WCARD+20)), y=-40;
                     SDL_Rect rect={x,y,WCARD,HCARD};
+                    Card *linkholder=NULL;
                     if(SDL_PointInRect(&(SDL_Point){mx,my},&rect)&&turn%2==0){
-                        printf("p2 Playing\n");
-                        if(p2->hand.cards[i]->effect){
-                            p2->hand.cards[i]->effect(p2,p1);
+                        printf("p2 Playing...\n");
+                        int validity=judge(p2->hand.cards[i], p2, p1, ren,linkholder);
+                        if(validity==1){
+                            p2->disc.cards[p1discardindex++]=p2->hand.cards[i];
+                            for(int j=i;j<p2->hand.cnt-1;j++){
+                                p2->hand.cards[j]=p2->hand.cards[j+1];
+                            }
+                            p2->hand.cnt--;
+                        }else if(validity==2){
+                            int origin = p2->pos; // current position
+                            int move = p2->hand.cards[i]->mov;
+                            int from = origin - move;
+                            int to = origin + move;
+
+                            // Clamp to lane range
+                            if (from < -4) from = -4;
+                            if (to > 4) to = 4;
+
+                            // Highlight movement blocks
+                            for (int j = from; j <= to; j++) {
+                                if(j!=p2->pos)filledCircleRGBA(ren, XCENTER + j * (WField + 20), YCENTER, 20, 0, 255, 0, 255);
+                            }
+                            SDL_RenderPresent(ren);
+
+                            // Wait for valid block click
+                            SDL_Event e2;
+                            int picked = -5;
+                            while (picked == -5 && SDL_WaitEvent(&e2)) {
+                                if (e2.type == SDL_QUIT) {
+                                    inbattle = 0;
+                                    break;
+                                }
+                                if (e2.type == SDL_MOUSEBUTTONDOWN && e2.button.button == SDL_BUTTON_LEFT) {
+                                    int mx = e2.button.x, my = e2.button.y;
+                                    for (int j = from; j <= to; j++) {
+                                        SDL_Rect move_rect = {XCENTER + j * (WField + 20)-20, YCENTER - 20, 40, 40};
+                                        if (SDL_PointInRect(&(SDL_Point){mx, my}, &move_rect)) {
+                                            picked = j;
+                                            if (picked != p1->pos|| picked != p2->pos) {
+                                                p2->pos = picked;
+                                                p2->power += p2->hand.cards[i]->val;
+                                                //discard
+                                                p2->disc.cards[p1discardindex++] = p2->hand.cards[i];
+                                                for (int j = i; j < p2->hand.cnt - 1; j++) {
+                                                    p2->hand.cards[j] = p2->hand.cards[j + 1];
+                                                }
+                                                p2->hand.cnt--;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }else if(validity==3){
+                            int samecnt=0;
+                            for(int j=0;j<p2->hand.cnt;j++){
+                                if(linkcheck(p2->hand.cards[i]->type, p2->hand.cards[j]->type)){
+                                    filledCircleRGBA(ren, WSCREEN-((j+1)*(WCARD+20)), 40, 20, 255, 255, 0, 255);
+                                    samecnt++;
+                                }
+                            }
+                            SDL_RenderPresent(ren);
+                            if(samecnt==0){
+                                WriteText(ren, "No valid link cards found!", (SDL_Color){255, 0, 0, 255}, WSCREEN / 2, HSCREEN / 2+100,30);
+                                SDL_RenderPresent(ren);
+                                SDL_Delay(2000); // Pause to show the message
+                                continue;
+                            }
+                            SDL_Event e2;
+                            int link_failed = 0,link_completed=0;
+                            while (SDL_WaitEvent(&e2)) {
+                                if (e2.type == SDL_QUIT) {
+                                    inbattle = 0;
+                                    break;
+                                }
+                                if (e2.type == SDL_MOUSEBUTTONDOWN && e2.button.button == SDL_BUTTON_LEFT) {
+                                    int mx = e2.button.x, my = e2.button.y;
+                                    for (int j = 0; j < p2->hand.cnt; j++) {
+                                        SDL_Rect link_rect = {WSCREEN-(50+(j+1)*(WCARD+20)), - 40, WCARD, HCARD};
+                                        if (SDL_PointInRect(&(SDL_Point){mx, my}, &link_rect)) {
+                                            if (!linkcheck(p2->hand.cards[i]->type, p2->hand.cards[j]->type)) {
+                                                WriteText(ren, "Invalid link card type!", (SDL_Color){255, 0, 0, 255}, WSCREEN / 2, HSCREEN / 2 + 100, 30);
+                                                SDL_RenderPresent(ren);
+                                                SDL_Delay(1500);
+                                                link_failed = 1;
+                                                break;
+                                            }
+                                            int linkvalidity = judge(p2->hand.cards[j], p2, p1, ren, p2->hand.cards[i]);
+                                            if (linkvalidity == 1) {
+                                                // Discard both cards
+                                                p2->disc.cards[p1discardindex++] = p2->hand.cards[i];
+                                                p2->disc.cards[p1discardindex++] = p2->hand.cards[j];
+
+                                                // Remove higher index first to avoid shifting issues
+                                                int max_idx = (i > j) ? i : j;
+                                                int min_idx = (i > j) ? j : i;
+
+                                                for (int k = max_idx; k < p2->hand.cnt - 1; k++) {
+                                                    p2->hand.cards[k] = p2->hand.cards[k + 1];
+                                                }
+                                                p2->hand.cnt--;
+                                                for (int k = min_idx; k < p2->hand.cnt - 1; k++) {
+                                                    p2->hand.cards[k] = p2->hand.cards[k + 1];
+                                                }
+                                                p2->hand.cnt--;
+                                                printf("%d ",p2->hand.cnt);
+                                                link_completed = 1;
+                                                //SDL_RenderPresent(ren);
+                                            } else {
+                                                link_failed = 1;
+                                            }
+                                            break; // break the for loop
+                                        }
+                                    }
+                                    if (link_failed||link_completed) break; // break the SDL_WaitEvent loop
+                                }
+                            }
+                        }else{
+                            continue;
                         }
-                        p2->disc.cards[p2discardindex++]=p2->hand.cards[i];
-                        for(int j=i;j<p2->hand.cnt-1;j++){
-                            p2->hand.cards[j]=p2->hand.cards[j+1];
-                        }
-                        p2->hand.cnt--;
                     }
                 }
             }
@@ -405,18 +539,27 @@ void BattleScreen(SDL_Renderer *ren,Player *p1,Player *p2){
         SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
         SDL_RenderDrawRect(ren, &p1_health_frame);
         // P1 epic cards
-        if(p1->health<=p1->fable->epic_threshold&&!epic_selected){
-            for(int i=0;i<3;i++){
-                SDL_Rect epic_rect={WSCREEN-350+i*100, HSCREEN-50, 80, 80};
-                SDL_SetRenderDrawColor(ren, p1->fable->epic[i].Piece.r, p1->fable->epic[i].Piece.g, p1->fable->epic[i].Piece.b, p1->fable->epic[i].Piece.a);
+        if(p1->health<=p1->fable->epic_threshold){
+            if(p1_epic_selected==0){
+                for(int i=0;i<3;i++){
+                    SDL_Rect epic_rect={50, HSCREEN-(300+i*70), 300, 50};
+                    SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
+                    SDL_RenderFillRect(ren, &epic_rect);
+                    WriteText(ren,p1->fable->epic[i].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+                }
+            }else{
+                SDL_Rect epic_rect={50, HSCREEN-300, 300, 50};
+                SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
                 SDL_RenderFillRect(ren, &epic_rect);
-                WriteText(ren,p1->fable->epic[i].name,(SDL_Color){255,255,255,255}, epic_rect.x+WCARD/2, epic_rect.y+HCARD/2,16);
+                WriteText(ren,p1->fable->epic[p1_epic_selected-1].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
             }
         }
         // P1 epic indicator
-        SDL_Rect epic_p1={WSCREEN-350+(p1->fable->epic_threshold*300/p1->fable->health), HSCREEN-105, 20, 40};
-        SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
-        SDL_RenderFillRect(ren, &epic_p1);
+        if(p1_epic_selected==0){
+            SDL_Rect epic_p1={WSCREEN-350+(p1->fable->epic_threshold*300/p1->fable->health), HSCREEN-105, 20, 40};
+            SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
+            SDL_RenderFillRect(ren, &epic_p1);
+        }
         // P1 power
         SDL_Rect p1_power_rect={WSCREEN-350, HSCREEN-150, p1->power*12, 30};
         SDL_SetRenderDrawColor(ren, 124, 199, 232, 255);
@@ -456,25 +599,43 @@ void BattleScreen(SDL_Renderer *ren,Player *p1,Player *p2){
         SDL_Rect p2_health_frame={50, 200, 300, 30};
         SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
         SDL_RenderDrawRect(ren, &p2_health_frame);
+        // P2 epic cards
+        if(p2->health<=p2->fable->epic_threshold){
+            if(p2_epic_selected==0){
+                for(int i=0;i<3;i++){
+                    SDL_Rect epic_rect={WSCREEN-370, 280+(i*70), 300, 50};
+                    SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
+                    SDL_RenderFillRect(ren, &epic_rect);
+                    WriteText(ren,p2->fable->epic[i].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+                }
+            }else{
+                SDL_Rect epic_rect={WSCREEN-370, 280, 300, 50};
+                SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
+                SDL_RenderFillRect(ren, &epic_rect);
+                WriteText(ren,p2->fable->epic[p2_epic_selected-1].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+            }
+        }
         // P2 epic indicator
-        SDL_Rect epic_p2={50+(p2->fable->epic_threshold*300/p2->fable->health), 195, 20, 40};
+        if(p2_epic_selected==0){
+            SDL_Rect epic_p2={50+(p2->fable->epic_threshold*300/p2->fable->health), 195, 20, 40};
         SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
         SDL_RenderFillRect(ren, &epic_p2);
+        }
         // P2 power
+        SDL_Rect p2_power_frame={50, 150, p2->power*12, 30};
+        SDL_SetRenderDrawColor(ren, 124, 199, 232, 255);
+        SDL_RenderFillRect(ren, &p2_power_frame);
         SDL_Rect p2_power_rect={50, 150, 300, 30};
         SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
         SDL_RenderDrawRect(ren, &p2_power_rect);
         for(int x=1;x<=24;x++){
             SDL_RenderDrawLine(ren,50+x*12,150,50+x*12,180);
         }
-        SDL_Rect p2_power_frame={50, 150, p2->power*12, 30};
-        SDL_SetRenderDrawColor(ren, 124, 199, 232, 255);
-        SDL_RenderFillRect(ren, &p2_power_frame);
         // P2 defense
         SDL_Rect p2_defense_limit={50+(p2->fable->defense)*24, 100, (9-p2->fable->defense)*24, 30};
         SDL_SetRenderDrawColor(ren, 139, 0, 0, 255);
         SDL_RenderFillRect(ren, &p2_defense_limit);
-        SDL_Rect p2_defense_rect={50, 100, p2->defense*12/p2->fable->defense, 30};
+        SDL_Rect p2_defense_rect={50, 100, p2->defense*24, 30};
         SDL_SetRenderDrawColor(ren, 255, 153, 19, 255);
         SDL_RenderFillRect(ren, &p2_defense_rect);
         SDL_Rect p2_defense_frame={50, 100, 216, 30};
