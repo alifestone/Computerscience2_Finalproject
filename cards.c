@@ -1,7 +1,4 @@
-#ifndef CARDS_H_INCLUDED
-#define CARDS_H_INCLUDED
-#include "base.h"
-#include "declare.h"
+#include "cards.h"
 //-------------------- 機制 --------------------
 void add_deck(Deck *deck, Card *card) {
     if(deck->cnt < MAX_CARD) deck->cards[deck->cnt++] = card;
@@ -138,4 +135,3 @@ Card Move3={
     .link=false,
     .effect=NULL //請填入效果函式
 };
-#endif
