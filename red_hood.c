@@ -1,4 +1,4 @@
-#include "declare.h"
+#include "red_hood.h"
 Card potshot={"Pot\nShot",SKILL_ATK,0,1,0,0,1,true,NULL};
 Card crackshot={"Crack\nShot",SKILL_ATK,2,2,0,0,2,true,NULL};
 Card overdrive_burn={
