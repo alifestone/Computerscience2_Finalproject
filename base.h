@@ -11,6 +11,7 @@
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_ttf.h>
 #include<SDL2/SDL2_gfxPrimitives.h>
+
 #define MAX_CARD 100
 #define WCARD 200
 #define HCARD 280
@@ -21,6 +22,15 @@
 #define HAND_SIZE 5
 #define XCENTER 960
 #define YCENTER 540
+
+// Add missing MIN/MAX macros
+#ifndef MIN
+#define MIN(a,b) ((a)<(b)?(a):(b))
+#endif
+
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
 
 typedef enum {
     BASIC_ATK,  //基礎攻擊牌
@@ -68,6 +78,7 @@ typedef struct {
     int32_t lane;       //0, 1, or 2
     Deck skill[3];  //技能牌庫
     Card epic[3];
+    void* character_state; // Generic pointer for character-specific state
 } Fable;
 
 typedef struct {
@@ -82,4 +93,28 @@ typedef struct {
     Deck hand;          //手牌
     Deck twist;         //反轉牌區
 } Player;
+
+// Forward declarations for character management functions
+void alice_turn_start(Player* player);
+void alice_turn_end(Player* player);
+void alice_update(Player* player, float delta_time);
+
+void kaguya_turn_start(Player* player);
+void kaguya_turn_end(Player* player);
+void kaguya_on_damage_taken(Player* target, int damage, Player* source);
+
+void mulan_turn_start(Player* player);
+void mulan_turn_end(Player* player);
+void mulan_on_damage_taken(Player* target, int damage, Player* source);
+
+void snow_white_turn_start(Player* player);
+void snow_white_turn_end(Player* player);
+
+void match_girl_turn_start(Player* player);
+void match_girl_turn_end(Player* player);
+void match_girl_update(Player* player, float delta_time);
+
+void red_hood_turn_start(Player* player);
+void red_hood_turn_end(Player* player);
+
 #endif

@@ -3,61 +3,114 @@
 
 #include "base.h"
 
-// 火柴女孩角色資料
-extern Fable match_girl;
-
-// 額外狀態：火柴牌堆與狀態
+// Enhanced Energy System
 typedef struct {
-    Player *player;
-    Deck match_pile;
-    bool match_placed_this_turn;
-} MGState;
+    int current_energy;              // Current energy available
+    int max_energy;                  // Maximum energy that can be stored
+    int energy_per_fire_card;        // Energy gained when opponent uses fire cards
+    int energy_per_turn;             // Passive energy generation
+    bool flame_enhancement_active;   // From twist cards
+    int energy_spent_this_turn;      // Track spending for balance
+} EnergySystem;
 
-extern MGState match_girl_state;
+// Fire Card Management System
+typedef struct {
+    int fire_cards_placed_this_turn;    // Track placement limits
+    int max_fire_per_turn;              // Balance limitation
+    bool can_place_fire_adjacent;       // Special rule activation
+    int fire_cards_in_opponent_deck;    // Track for strategic decisions
+    int fire_cards_in_opponent_discard; // Track for retrieval abilities
+} FireSystem;
 
-// 初始化角色與火柴牌庫
-void init_match_girl_fable(void);
-void init_match_pile(void);
+// Risk/Reward System
+typedef struct {
+    int max_life_loss_per_turn;         // Safety limitation
+    int life_lost_this_turn;            // Track for limits
+    int cards_drawn_from_life_loss;     // Track efficiency
+    bool desperate_measures_active;     // Enhanced life trading
+} RiskRewardSystem;
 
-// 每回合清除放置狀態
-void reset_match_placement(Player *p);
+// Match Girl's complete enhanced state
+typedef struct {
+    EnergySystem energy;
+    FireSystem fire;
+    RiskRewardSystem risk_reward;
+    bool ritual_of_pain_active;         // Twist effect
+    bool storm_eve_stacks;              // Accumulating twist effect
+    int consecutive_energy_turns;       // Momentum tracking
+} MatchGirlState;
 
-// 檢查是否與敵人相鄰
-bool is_adjacent(Player *p1, Player *p2);
+// Enhanced fire card
+typedef struct {
+    int level;                          // 1, 2, or 3
+    int damage_on_use;                  // Damage when opponent uses it
+    int energy_given_to_match_girl;     // Energy Match Girl gets
+    bool can_be_used_as_attack;         // Rule restrictions
+    bool can_be_used_as_defense;        // Rule restrictions
+    bool can_be_used_as_movement;       // Rule restrictions
+    char restriction_reason[64];        // Why it's restricted
+} EnhancedFireCard;
 
-// 嘗試將火柴牌放到對手牌庫頂
-bool try_place_match(Player *self, Player *enemy);
+// Match Girl role data
+extern Fable match_girl_enhanced_fable;
 
-// 當對手使用火柴牌時觸發 +1 能量
-void on_card_played(Player *who_played, Card *card);
+// Initialization functions
+void init_enhanced_match_girl_fable(void);
+void init_enhanced_match_girl_state(Player *player);
+void setup_enhanced_match_girl_player(Player *player);
+void init_enhanced_fire_supply(void);
 
-// -------------------------------------
-// 攻擊卡
-extern Card phantom_wish;
-extern Card secret_desire;
-extern Card endless_luxury;
+// Match Girl mechanics
+void match_girl_enhanced_turn_start(Player *player);
+void match_girl_enhanced_turn_end(Player *player);
+void match_girl_enhanced_update(Player *player, float delta_time);
+bool place_enhanced_fire_card(Player *match_girl, Player *opponent, int fire_level);
+void on_opponent_uses_enhanced_fire_card(Player *match_girl, Card *fire_card);
+bool match_girl_can_place_fire(Player *player);
+int match_girl_get_current_energy(Player *player);
+bool match_girl_can_enhance_with_energy(Player *player, int energy_cost);
+void check_match_girl_energy_gain(Card *card_used, Player *card_user);
 
-// 防禦卡
-extern Card devil_sacrifice;
-extern Card devil_bet;
-extern Card devil_contract;
+// Card effect function declarations
+void phantom_wish_enhanced_effect(void *self, void *target);
+void secret_desire_enhanced_effect(void *self, void *target);
+void endless_luxury_enhanced_effect(void *self, void *target);
+void devil_sacrifice_enhanced_effect(void *self, void *target);
+void devil_bet_enhanced_effect(void *self, void *target);
+void devil_contract_enhanced_effect(void *self, void *target);
+void weightless_soul_enhanced_effect(void *self, void *target);
+void indebted_soul_enhanced_effect(void *self, void *target);
+void broken_soul_enhanced_effect(void *self, void *target);
+void hell_flame_enhanced_effect(void *self, void *target);
+void doomfall_enhanced_effect(void *self, void *target);
+void curse_of_greed_enhanced_effect(void *self, void *target);
 
-// 移動卡
-extern Card weightless_soul;
-extern Card indebted_soul;
-extern Card broken_soul;
+// Attack cards
+extern Card phantom_wish_enhanced;    // Phantom Wish
+extern Card secret_desire_enhanced;   // Secret Desire
+extern Card endless_luxury_enhanced;  // Endless Luxury
 
-// TWIST 蛻變卡
-extern Card ritual_of_pain;
-extern Card flame_trick;
-extern Card torment_of_fate;
-extern Card indulgent_desire;
-extern Card devil_gaze;
-extern Card desire_trick;
+// Defense cards
+extern Card devil_sacrifice_enhanced; // Devil's Sacrifice
+extern Card devil_bet_enhanced;       // Devil's Bet
+extern Card devil_contract_enhanced;  // Devil's Contract
 
-// EPIC 必殺卡
-extern Card hell_flame;
-extern Card doomfall;
-extern Card curse_of_greed;
+// Movement cards
+extern Card weightless_soul_enhanced; // Weightless Soul
+extern Card indebted_soul_enhanced;   // Indebted Soul
+extern Card broken_soul_enhanced;     // Broken Soul
+
+// Twist cards
+extern Card ritual_of_pain;           // Ritual of Pain
+extern Card flame_trick;              // Flame Trick
+extern Card torment_of_fate;          // Torment of Fate
+extern Card indulgent_desire;         // Indulgent Desire
+extern Card devil_gaze;               // Devil Gaze
+extern Card desire_trick;             // Desire Trick
+
+// Epic cards
+extern Card hell_flame_enhanced;      // Hell Flame
+extern Card doomfall_enhanced;        // Doomfall
+extern Card curse_of_greed_enhanced;  // Curse of Greed
 
 #endif
