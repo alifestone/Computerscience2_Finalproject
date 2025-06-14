@@ -25,7 +25,7 @@ typedef struct DefenseSystem {
 typedef struct FilteringSystem {
     int cards_filtered_this_turn;  // Track filtering usage
     int max_filters_per_turn;      // Balance limitation
-    bool divine_召換_active;        // Enhanced filtering mode
+    bool divine_call_active;        // Enhanced filtering mode
     Card* filtered_cards_cache[10]; // Cache for UI display
     int cache_count;               // Number of cards in cache
 } FilteringSystem;
@@ -351,7 +351,7 @@ Fable kaguya_fable;
 //=============================================================================
 
 KaguyaState* get_kaguya_state(Player* player) {
-    return (KaguyaState*)player->fable->skill;
+    return (KaguyaState*)player->fable->character_state;
 }
 
 void init_kaguya_state(Player* player) {
@@ -366,7 +366,7 @@ void init_kaguya_state(Player* player) {
     // Initialize filtering system
     kaguya_state->filtering.max_filters_per_turn = 3; // Balanced limit
     kaguya_state->filtering.cards_filtered_this_turn = 0;
-    kaguya_state->filtering.divine_召換_active = false;
+    kaguya_state->filtering.divine_call_active = false;
     kaguya_state->filtering.cache_count = 0;
     
     // Initialize moonlight system
@@ -380,7 +380,7 @@ void init_kaguya_state(Player* player) {
     kaguya_state->purification_stacks = 0;
     kaguya_state->invulnerability_active = false;
     
-    player->fable->skill = (Deck*)kaguya_state;
+    player->fable->character_state = kaguya_state;
     
     printf("Kaguya's celestial defense systems initialized\n");
 }

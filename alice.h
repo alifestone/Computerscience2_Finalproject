@@ -3,16 +3,16 @@
 
 #include "base.h"
 
-// 愛麗絲身份類型
+// 愛麗絲身份類型 - Remove conflicting enum definition
 typedef enum {
-    IDENTITY_NONE = 0,
-    IDENTITY_QUEEN_OF_HEARTS = 1,  // 紅心皇后
-    IDENTITY_MAD_HATTER = 2,       // 瘋帽子
-    IDENTITY_CHESHIRE_CAT = 3      // 柴郡貓
+    ALICE_IDENTITY_NONE = 0,
+    ALICE_IDENTITY_QUEEN_OF_HEARTS = 1,  // 紅心皇后
+    ALICE_IDENTITY_MAD_HATTER = 2,       // 瘋帽子
+    ALICE_IDENTITY_CHESHIRE_CAT = 3      // 柴郡貓
 } AliceIdentity;
 
-// 愛麗絲狀態追蹤
-typedef struct {
+// 愛麗絲狀態追蹤 - Use different struct name to avoid conflicts
+typedef struct AliceGameState {
     Player *player;                    // 愛麗絲玩家指標
     AliceIdentity current_identity;    // 當前身份
     AliceIdentity available_identities[3]; // 可選擇的身份
@@ -22,10 +22,10 @@ typedef struct {
     int show_performance_stacks;       // "開始我的表演"疊加次數
     int endless_party_uses;            // "無休止的派對"使用次數
     bool wonderland_day_active;        // "精彩的奇妙日"是否生效
-} AliceState;
+} AliceGameState;
 
-extern AliceState alice_state;
-extern Fable alice;
+extern AliceGameState alice_state;
+extern Fable alice_fable;
 
 // 初始化函數
 void init_alice_fable(void);

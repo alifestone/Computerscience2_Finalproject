@@ -344,7 +344,7 @@ void init_enhanced_match_girl_state(Player* player) {
     mg_state->storm_eve_stacks = false;
     mg_state->consecutive_energy_turns = 0;
     
-    player->fable->skill = (Deck*)mg_state;
+    player->fable->character_state = mg_state;
     
     printf("Enhanced Match Girl systems initialized - energy accumulation ready!\n");
 }

@@ -218,7 +218,7 @@ void init_snow_white_state(Player* player) {
     sw_state->max_poison_per_turn = 3; // Base limit
     sw_state->poison_damage_multiplier = 1; // Base multiplier
     
-    player->fable->skill = (Deck*)sw_state;
+    player->fable->character_state = sw_state;
 }
 
 //=============================================================================

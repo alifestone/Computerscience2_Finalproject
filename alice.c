@@ -158,23 +158,23 @@ Fable alice_fable;
 AliceState* get_alice_state(Player* player) {
     // We store Alice's extended state in the player's fable data
     // This is a common pattern for character-specific state management
-    return (AliceState*)player->fable->skill; // Reusing skill array for state storage
+    return (AliceState*)player->fable->character_state; // Reusing skill array for state storage
 }
 
 void init_alice_state(Player* player) {
     if (!player || !player->fable) return;
     
-    // Allocate Alice-specific state
-    AliceState* alice_state = malloc(sizeof(AliceState));
-    memset(alice_state, 0, sizeof(AliceState));
+    AliceGameState* alice_state = malloc(sizeof(AliceGameState));
+    memset(alice_state, 0, sizeof(AliceGameState));
     
     // Set initial identity (player chooses at game start)
-    alice_state->current_identity = IDENTITY_RED_QUEEN; // Default start
-    alice_state->previous_identity = IDENTITY_COUNT; // Invalid value for first turn
-    alice_state->must_switch_identity = true;
+    alice_state->current_identity = ALICE_IDENTITY_QUEEN_OF_HEARTS; // Default start
+    alice_state->identity_changed_this_turn = true;
     
-    // Store state in character data
-    player->fable->skill = (Deck*)alice_state; // Type punning for storage
+    // Store state in character data - FIX: Use character_state instead of skill
+    player->fable->character_state = alice_state;
+    
+    printf("Alice's identity systems initialized - ready for transformation!\n");
 }
 
 void alice_switch_identity(Player* player, AliceIdentity new_identity) {

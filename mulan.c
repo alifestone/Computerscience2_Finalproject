@@ -280,7 +280,7 @@ void init_mulan_state(Player* player) {
     mulan_state->consecutive_blocks = 0;
     mulan_state->damage_taken_this_turn = 0;
     
-    player->fable->skill = (Deck*)mulan_state;
+    player->fable->character_state = mulan_state;
     
     printf("Mulan's combat systems initialized - ready for reactive combat!\n");
 }

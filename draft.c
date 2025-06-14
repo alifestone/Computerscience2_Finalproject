@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// Forward declaration of GameContext to fix struct pointer issues
+typedef struct GameContext GameContext;
+
 // Enhanced game state management following the architectural guide
 typedef enum {
     GAME_STATE_MENU,
@@ -38,15 +41,15 @@ typedef struct GameEffect {
     int priority;
     int duration;
     int source_player;
-    void (*apply)(struct GameContext* ctx, struct GameEffect* effect);
-    void (*remove)(struct GameContext* ctx, struct GameEffect* effect);
-    bool (*condition)(struct GameContext* ctx);
+    void (*apply)(GameContext* ctx, struct GameEffect* effect);
+    void (*remove)(GameContext* ctx, struct GameEffect* effect);
+    bool (*condition)(GameContext* ctx);
     void* effect_data;
     struct GameEffect* next;
 } GameEffect;
 
 // Enhanced game context that tracks all game state
-typedef struct GameContext {
+struct GameContext {
     GameState current_state;
     GameState previous_state;
     TurnPhase current_phase;
@@ -70,7 +73,7 @@ typedef struct GameContext {
     SDL_Renderer* renderer;
     TTF_Font* font;
     bool show_debug;
-} GameContext;
+};
 
 // Global game context
 static GameContext* g_ctx = NULL;
@@ -225,7 +228,7 @@ void start_turn(int player_id) {
     if (player->fable) {
         switch (player->fable->epic_threshold) { // Using epic_threshold to identify character
             case 15: // Red Hood
-                // Red Hood specific turn start
+                red_hood_turn_start(player);
                 break;
             case 16: // Kaguya or Alice
                 if (strcmp(player->fable->name, "Kaguya") == 0) {
@@ -264,6 +267,7 @@ void end_turn(void) {
     if (player->fable) {
         switch (player->fable->epic_threshold) {
             case 15: // Red Hood
+                red_hood_turn_end(player);
                 break;
             case 16: // Kaguya or Alice  
                 if (strcmp(player->fable->name, "Kaguya") == 0) {
@@ -642,6 +646,56 @@ void update_game_logic(float delta_time) {
     }
 }
 
+// Placeholder function implementations to avoid linking errors
+void handle_input_event(SDL_Event* event) {
+    (void)event; // Suppress unused parameter warning
+}
+
+void render_game_state(void) {
+    // Placeholder
+}
+
+void render_battlefield(void) {
+    // Placeholder
+}
+
+void render_player_ui(Player* player, bool is_bottom) {
+    (void)player;
+    (void)is_bottom;
+}
+
+void render_cards_in_hand(Player* player, bool is_bottom) {
+    (void)player;
+    (void)is_bottom;
+}
+
+void render_epic_cards(Player* player, bool is_bottom) {
+    (void)player;
+    (void)is_bottom;
+}
+
+void render_turn_indicator(void) {
+    // Placeholder
+}
+
+void render_debug_info(void) {
+    // Placeholder
+}
+
+void activate_character_ability(Player* player, int ability_index) {
+    (void)player;
+    (void)ability_index;
+}
+
+void apply_healing(Player* target, int healing) {
+    if (!target || healing <= 0) return;
+    target->health += healing;
+}
+
+void advance_turn_phase(void) {
+    // Placeholder
+}
+
 // This function integrates with the existing main game loop
 void enhanced_battle_screen(SDL_Renderer* ren, Player* p1, Player* p2) {
     // Initialize enhanced game context
@@ -684,6 +738,3 @@ void enhanced_battle_screen(SDL_Renderer* ren, Player* p1, Player* p2) {
     
     cleanup_game_context();
 }
-
-// Note: The original BattleScreen function should be replaced with enhanced_battle_screen
-// This provides much better architecture for handling complex character interactions
