@@ -4,488 +4,759 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// 輝夜姬的狀態管理全域變數
-KaguyaState kaguya_state = {0};
+// Kaguya's system demonstrates FILTERING ALGORITHMS and CONDITIONAL STATE MANAGEMENT
+// This teaches us crucial programming concepts:
+// 1. Filtering and searching algorithms - finding specific cards in collections
+// 2. Conditional effects - abilities that trigger based on game state
+// 3. Resource cap management - dynamic limits that change during play
+// 4. Defensive programming - building systems that protect and enhance
+// 5. Delayed effects - actions that trigger in future turns
 
-// ===============================
-// 核心機制函式實作 
-// ===============================
+// Kaguya's Defense System - Dynamic defense caps and interactions
+typedef struct DefenseSystem {
+    int base_defense_cap;          // Starting defense limit
+    int current_defense_cap;       // Current maximum defense
+    int defense_cap_bonuses;       // Temporary increases to cap
+    bool punishment_mode_active;   // When defense > opponent's defense
+    int consecutive_high_defense_turns; // Tracks defensive momentum
+} DefenseSystem;
 
-/**
- * 獲取當前的防禦上限
- * 基礎上限6 + 蛻變牌加成
- */
-int get_current_defense_limit(Player *p) {
-    int base_limit = 6;  // 輝夜姬基礎防禦上限
-    return base_limit + kaguya_state.defense_limit_bonus;
-}
+// Card Filtering System - Kaguya's signature mechanic
+typedef struct FilteringSystem {
+    int cards_filtered_this_turn;  // Track filtering usage
+    int max_filters_per_turn;      // Balance limitation
+    bool divine_召換_active;        // Enhanced filtering mode
+    Card* filtered_cards_cache[10]; // Cache for UI display
+    int cache_count;               // Number of cards in cache
+} FilteringSystem;
 
-/**
- * 檢查是否有防禦加成（防禦≥3時攻擊+1）
- * 這是輝夜姬的核心機制之一
- */
-bool has_defense_bonus(Player *p) {
-    return (p && p->defense >= 3);
-}
+// Moonlight System - Represents Kaguya's celestial power
+typedef struct MoonlightSystem {
+    int moonlight_phases;          // Current phase (0-3, like moon phases)
+    int defense_per_phase;         // Defense gained each turn end
+    bool blood_moon_active;        // Special twist effect
+    int lunar_cycle_progress;      // Tracks progression through cycles
+} MoonlightSystem;
 
-/**
- * 觸發反擊機制（輝夜姬的特殊規則）
- * 當受到傷害時，可以棄攻擊牌進行反擊
- */
-void trigger_counter_attack(Player *defender, Player *attacker, int damage) {
-    if (!defender || !attacker || damage <= 0) return;
+// Kaguya's complete state - combines all defensive systems
+typedef struct KaguyaState {
+    DefenseSystem defense;
+    FilteringSystem filtering;
+    MoonlightSystem moonlight;
+    bool contemplation_active;     // From twist cards
+    int purification_stacks;       // From movement abilities
+    bool invulnerability_active;   // From epic cards
+} KaguyaState;
+
+// Forward declarations for Kaguya's card effects
+void enlightenment_light_effect(void* self, void* target);
+void enlightenment_glory_effect(void* self, void* target);
+void enlightenment_avatar_effect(void* self, void* target);
+void confusing_echo_effect(void* self, void* target);
+void ancient_resonance_effect(void* self, void* target);
+void divine_summon_effect(void* self, void* target);
+void focused_introspection_effect(void* self, void* target);
+void enlightened_resolve_effect(void* self, void* target);
+void painful_purification_effect(void* self, void* target);
+
+// Epic effects
+void scorching_bamboo_effect(void* self, void* target);
+void destined_judgment_effect(void* self, void* target);
+void restless_blood_effect(void* self, void* target);
+
+//=============================================================================
+// CARD FILTERING ALGORITHMS
+// These demonstrate how to implement search and filter operations on card collections
+//=============================================================================
+
+typedef enum {
+    FILTER_DEFENSE_CARDS,    // Look for defense cards specifically
+    FILTER_BY_LEVEL,         // Filter by card level/value
+    FILTER_BY_TYPE,          // Filter by card type
+    FILTER_BY_COST           // Filter by energy cost
+} FilterType;
+
+// Core filtering algorithm - this is a fundamental programming skill
+bool card_matches_filter(Card* card, FilterType filter, int parameter) {
+    if (!card) return false;
     
-    // 搜尋手牌中的攻擊牌或通用牌
-    for (int i = 0; i < defender->hand.cnt; i++) {
-        Card *card = defender->hand.cards[i];
-        if (card && (card->type == BASIC_ATK || card->type == SKILL_ATK || card->type == UNIVERSAL)) {
-            printf("💫 輝夜姬反擊！棄掉 %s 造成 %d 點傷害並抽1張牌\n", 
-                   card->name, card->dmg);
+    switch (filter) {
+        case FILTER_DEFENSE_CARDS:
+            return (card->type == BASIC_DEF || card->type == SKILL_DEF);
             
-            // 對攻擊者造成傷害
-            attacker->health -= card->dmg;
+        case FILTER_BY_LEVEL:
+            return (card->val == parameter);
             
-            // 移除該牌並抽牌
-            for (int j = i; j < defender->hand.cnt - 1; j++) {
-                defender->hand.cards[j] = defender->hand.cards[j + 1];
-            }
-            defender->hand.cnt--;
+        case FILTER_BY_TYPE:
+            return (card->type == parameter);
             
-            // 從抽牌堆抽一張牌
-            Card *drawn = draw_deck(&defender->draw);
-            if (drawn) {
-                add_deck(&defender->hand, drawn);
-            }
-            break;  // 每次只能反擊一次
-        }
+        case FILTER_BY_COST:
+            return (card->cst <= parameter);
+            
+        default:
+            return false;
     }
 }
 
-/**
- * 月下沉思效果：回合結束時獲得防禦2
- * 這個效果可以累積（有多張月下沉思蛻變牌時）
- */
-void moonlight_meditation_effect(Player *p) {
-    if (!p) return;
+// Advanced filtering with multiple criteria - real-world programming pattern
+int filter_deck_advanced(Deck* source_deck, Card* results[], int max_results, 
+                        FilterType filter, int parameter, bool remove_from_source) {
+    if (!source_deck || !results) return 0;
     
-    int defense_gain = 2 * kaguya_state.moonlight_meditation_count;
-    int current_limit = get_current_defense_limit(p);
+    int found_count = 0;
     
-    if (p->defense + defense_gain > current_limit) {
-        p->defense = current_limit;
-        printf("🌙 月下沉思：防禦已達上限 %d\n", current_limit);
-    } else {
-        p->defense += defense_gain;
-        printf("🌙 月下沉思：獲得 %d 點防禦\n", defense_gain);
-    }
-}
-
-/**
- * 重置回合能力（每回合開始時調用）
- */
-void reset_turn_abilities(Player *p) {
-    if (p == kaguya_state.player) {
-        kaguya_state.can_use_defense_as_attack = false;
-    }
-}
-
-// ===============================
-// 攻擊技能卡牌效果
-// ===============================
-
-void enlightened_glow_effect(void *self, void *target) {
-    Player *attacker = (Player *)self;
-    Player *defender = (Player *)target;
-    
-    int base_damage = 1;
-    int final_damage = base_damage;
-    
-    // 檢查防禦加成
-    if (has_defense_bonus(attacker)) {
-        final_damage += 1;
-        printf("✨ 領悟的光芒：防禦≥3，傷害+1！\n");
-    }
-    
-    printf("⚔️ 領悟的光芒造成 %d 點傷害\n", final_damage);
-    defender->health -= final_damage;
-}
-
-void enlightened_glory_effect(void *self, void *target) {
-    Player *attacker = (Player *)self;
-    Player *defender = (Player *)target;
-    
-    int base_damage = 2;
-    int final_damage = base_damage;
-    
-    if (has_defense_bonus(attacker)) {
-        final_damage += 1;
-        printf("✨ 領悟的榮耀：防禦≥3，傷害+1！\n");
-    }
-    
-    printf("⚔️ 領悟的榮耀造成 %d 點傷害\n", final_damage);
-    defender->health -= final_damage;
-}
-
-void enlightened_avatar_effect(void *self, void *target) {
-    Player *attacker = (Player *)self;
-    Player *defender = (Player *)target;
-    
-    int base_damage = 3;
-    int final_damage = base_damage;
-    
-    if (has_defense_bonus(attacker)) {
-        final_damage += 1;
-        printf("✨ 領悟的化身：防禦≥3，傷害+1！\n");
-    }
-    
-    printf("⚔️ 領悟的化身造成 %d 點傷害\n", final_damage);
-    defender->health -= final_damage;
-}
-
-void disciplinary_moment_effect(void *self, void *target) {
-    kaguya_state.defense_limit_bonus += 1;
-    kaguya_state.can_use_defense_as_attack = true;
-    
-    printf("⚖️ 懲戒時刻：防禦上限+1，本回合可將防禦牌當攻擊牌使用！\n");
-}
-
-// ===============================
-// 防禦技能卡牌效果
-// ===============================
-
-/**
- * 困惑的回聲效果：展示牌庫頂1張牌
- * 如果是防禦牌則加入手牌，否則選擇棄掉或放回
- */
-void confused_echo_effect(void *self, void *target) {
-    Player *p = (Player *)self;
-    
-    // 基礎防禦效果
-    int defense_gain = 1;
-    int current_limit = get_current_defense_limit(p);
-    
-    if (p->defense + defense_gain > current_limit) {
-        p->defense = current_limit;
-    } else {
-        p->defense += defense_gain;
-    }
-    
-    // 展示牌庫頂部的牌
-    if (p->draw.cnt > 0) {
-        Card *top_card = p->draw.cards[p->draw.cnt - 1];
-        printf("🔮 困惑的回聲：展示牌庫頂的 %s\n", top_card->name);
+    // Search through deck from top to bottom
+    for (int i = 0; i < source_deck->cnt && found_count < max_results; i++) {
+        Card* card = source_deck->cards[i];
         
-        if (top_card->type == BASIC_DEF || top_card->type == SKILL_DEF) {
-            // 是防禦牌，加入手牌
-            Card *card = draw_deck(&p->draw);
-            add_deck(&p->hand, card);
-            printf("🛡️ 防禦牌加入手牌！\n");
-        } else {
-            // 不是防禦牌，模擬玩家選擇（這裡簡化為棄掉）
-            Card *card = draw_deck(&p->draw);
-            add_deck(&p->disc, card);
-            printf("🗑️ 非防禦牌已棄掉\n");
-        }
-    }
-}
-
-void distant_echo_effect(void *self, void *target) {
-    Player *p = (Player *)self;
-    
-    int defense_gain = 2;
-    int current_limit = get_current_defense_limit(p);
-    
-    if (p->defense + defense_gain > current_limit) {
-        p->defense = current_limit;
-    } else {
-        p->defense += defense_gain;
-    }
-    
-    // 展示牌庫頂部2張牌
-    int cards_to_show = (p->draw.cnt < 2) ? p->draw.cnt : 2;
-    
-    for (int i = 0; i < cards_to_show; i++) {
-        if (p->draw.cnt > 0) {
-            Card *top_card = p->draw.cards[p->draw.cnt - 1];
-            printf("🔮 久遠的回響：展示 %s\n", top_card->name);
+        if (card_matches_filter(card, filter, parameter)) {
+            results[found_count] = card;
+            found_count++;
             
-            if (top_card->type == BASIC_DEF || top_card->type == SKILL_DEF) {
-                Card *card = draw_deck(&p->draw);
-                add_deck(&p->hand, card);
-                printf("🛡️ 防禦牌加入手牌！\n");
-            } else {
-                Card *card = draw_deck(&p->draw);
-                add_deck(&p->disc, card);
-                printf("🗑️ 非防禦牌已棄掉\n");
+            if (remove_from_source) {
+                // Remove from source deck
+                for (int j = i; j < source_deck->cnt - 1; j++) {
+                    source_deck->cards[j] = source_deck->cards[j + 1];
+                }
+                source_deck->cnt--;
+                i--; // Adjust index since we removed a card
             }
         }
     }
+    
+    return found_count;
 }
 
-void divine_summon_effect(void *self, void *target) {
-    Player *p = (Player *)self;
+// Kaguya's specific filtering mechanic - show cards and let player choose
+void kaguya_filter_and_choose(Player* player, int cards_to_show, FilterType filter) {
+    if (!player) return;
     
-    int defense_gain = 3;
-    int current_limit = get_current_defense_limit(p);
+    KaguyaState* kaguya_state = get_kaguya_state(player);
+    if (!kaguya_state) return;
     
-    if (p->defense + defense_gain > current_limit) {
-        p->defense = current_limit;
-    } else {
-        p->defense += defense_gain;
+    // Check filtering limits
+    if (kaguya_state->filtering.cards_filtered_this_turn >= 
+        kaguya_state->filtering.max_filters_per_turn) {
+        printf("Maximum filtering uses reached this turn\n");
+        return;
     }
     
-    // 展示牌庫頂部3張牌
-    int cards_to_show = (p->draw.cnt < 3) ? p->draw.cnt : 3;
+    printf("Kaguya examines the top %d cards of her deck...\n", cards_to_show);
     
-    for (int i = 0; i < cards_to_show; i++) {
-        if (p->draw.cnt > 0) {
-            Card *top_card = p->draw.cards[p->draw.cnt - 1];
-            printf("🔮 神性的召換：展示 %s\n", top_card->name);
-            
-            if (top_card->type == BASIC_DEF || top_card->type == SKILL_DEF) {
-                Card *card = draw_deck(&p->draw);
-                add_deck(&p->hand, card);
-                printf("🛡️ 防禦牌加入手牌！\n");
-            } else {
-                Card *card = draw_deck(&p->draw);
-                add_deck(&p->disc, card);
-                printf("🗑️ 非防禦牌已棄掉\n");
-            }
+    // Look at top cards
+    Card* revealed_cards[10];
+    int revealed_count = 0;
+    
+    for (int i = 0; i < cards_to_show && i < player->draw.cnt; i++) {
+        revealed_cards[revealed_count] = player->draw.cards[player->draw.cnt - 1 - i];
+        revealed_count++;
+    }
+    
+    // Filter for defense cards
+    Card* defense_cards[10];
+    int defense_count = 0;
+    
+    for (int i = 0; i < revealed_count; i++) {
+        if (card_matches_filter(revealed_cards[i], filter, 0)) {
+            defense_cards[defense_count] = revealed_cards[i];
+            defense_count++;
         }
     }
-}
-
-void blood_moonlight_effect(void *self, void *target) {
-    kaguya_state.defense_limit_bonus += 1;
-    printf("🩸 血色月光：防禦上限+1，每重置3點防禦抽1張牌的效果已啟動\n");
-}
-
-// ===============================
-// 移動技能卡牌效果
-// ===============================
-
-void focused_introspection_effect(void *self, void *target) {
-    Player *p = (Player *)self;
     
-    printf("🧘 專注的自省：可以失去1點生命來移除手牌或棄牌堆中的一張牌\n");
-    
-    // 這裡簡化實作，實際遊戲中需要讓玩家選擇
-    if (p->health > 1 && (p->hand.cnt > 0 || p->disc.cnt > 0)) {
-        p->health -= 1;
+    // Add filtered cards to hand
+    for (int i = 0; i < defense_count; i++) {
+        add_deck(&player->hand, defense_cards[i]);
         
-        // 簡化：移除手牌中的第一張牌
-        if (p->hand.cnt > 0) {
-            printf("🗑️ 移除手牌中的 %s\n", p->hand.cards[0]->name);
-            for (int i = 0; i < p->hand.cnt - 1; i++) {
-                p->hand.cards[i] = p->hand.cards[i + 1];
+        // Remove from deck
+        for (int j = 0; j < player->draw.cnt; j++) {
+            if (player->draw.cards[j] == defense_cards[i]) {
+                for (int k = j; k < player->draw.cnt - 1; k++) {
+                    player->draw.cards[k] = player->draw.cards[k + 1];
+                }
+                player->draw.cnt--;
+                break;
             }
-            p->hand.cnt--;
         }
     }
+    
+    // Handle remaining cards (player choice: discard or return to deck)
+    // Simplified: discard non-defense cards
+    for (int i = 0; i < revealed_count; i++) {
+        bool is_defense = false;
+        for (int j = 0; j < defense_count; j++) {
+            if (revealed_cards[i] == defense_cards[j]) {
+                is_defense = true;
+                break;
+            }
+        }
+        
+        if (!is_defense) {
+            add_deck(&player->disc, revealed_cards[i]);
+            // Remove from deck
+            for (int j = 0; j < player->draw.cnt; j++) {
+                if (player->draw.cards[j] == revealed_cards[i]) {
+                    for (int k = j; k < player->draw.cnt - 1; k++) {
+                        player->draw.cards[k] = player->draw.cards[k + 1];
+                    }
+                    player->draw.cnt--;
+                    break;
+                }
+            }
+        }
+    }
+    
+    kaguya_state->filtering.cards_filtered_this_turn++;
+    printf("Kaguya found %d defense cards and added them to hand\n", defense_count);
 }
 
-void enlightened_resolve_effect(void *self, void *target) {
-    Player *p = (Player *)self;
+//=============================================================================
+// DEFENSE SYSTEM MANAGEMENT
+// Shows how to implement dynamic caps and conditional bonuses
+//=============================================================================
+
+void init_defense_system(DefenseSystem* defense) {
+    if (!defense) return;
     
-    focused_introspection_effect(self, target);  // 包含基礎效果
-    
-    printf("💡 頓悟的決心：持續效果已設置，下回合開始時將檢查對手位置\n");
-    // 實際遊戲中需要設置持續效果標記
+    defense->base_defense_cap = 6;
+    defense->current_defense_cap = 6;
+    defense->defense_cap_bonuses = 0;
+    defense->punishment_mode_active = false;
+    defense->consecutive_high_defense_turns = 0;
 }
 
-void painful_purification_effect(void *self, void *target) {
-    Player *p = (Player *)self;
+void increase_defense_cap(KaguyaState* kaguya_state, int amount, const char* source) {
+    if (!kaguya_state) return;
     
-    focused_introspection_effect(self, target);  // 包含基礎效果
+    kaguya_state->defense.defense_cap_bonuses += amount;
+    kaguya_state->defense.current_defense_cap = kaguya_state->defense.base_defense_cap + 
+                                               kaguya_state->defense.defense_cap_bonuses;
     
-    printf("💔 痛徹的淨化：持續效果已設置，下回合開始時將造成更多傷害\n");
-    // 實際遊戲中需要設置持續效果標記
+    printf("Kaguya's defense cap increased by %d from %s (now %d)\n", 
+           amount, source, kaguya_state->defense.current_defense_cap);
 }
 
-void spiritual_instinct_effect(void *self, void *target) {
-    kaguya_state.defense_limit_bonus += 1;
-    printf("👁️ 靈性本能：防禦上限+1，可以移動對手的能力已啟動\n");
+bool check_punishment_mode(Player* kaguya_player, Player* opponent) {
+    if (!kaguya_player || !opponent) return false;
+    
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya_player);
+    if (!kaguya_state) return false;
+    
+    bool was_active = kaguya_state->defense.punishment_mode_active;
+    kaguya_state->defense.punishment_mode_active = (kaguya_player->defense > opponent->defense);
+    
+    if (kaguya_state->defense.punishment_mode_active && !was_active) {
+        printf("Kaguya enters Punishment Mode - her defense exceeds opponent's!\n");
+    } else if (!kaguya_state->defense.punishment_mode_active && was_active) {
+        printf("Kaguya's Punishment Mode ends\n");
+    }
+    
+    return kaguya_state->defense.punishment_mode_active;
 }
 
-void moonlight_meditation_passive_effect(void *self, void *target) {
-    kaguya_state.moonlight_meditation_count++;
-    printf("🌙 月下沉思：蛻變牌數量+1（現在：%d張）\n", 
-           kaguya_state.moonlight_meditation_count);
-}
+//=============================================================================
+// KAGUYA'S CARD DEFINITIONS
+// Each card demonstrates different aspects of filtering and defense
+//=============================================================================
 
-// ===============================
-// 必殺技效果
-// ===============================
-
-void blazing_bamboo_sword_effect(void *self, void *target) {
-    Player *p = (Player *)self;
-    printf("🗡️ 炙熱的竹刀：直到下回合開始，你不會承受傷害也不會失去生命！\n");
-    // 實際遊戲中需要設置無敵狀態
-}
-
-void destined_judgment_effect(void *self, void *target) {
-    Player *attacker = (Player *)self;
-    Player *defender = (Player *)target;
-    
-    int current_limit = get_current_defense_limit(attacker);
-    
-    // 設置防禦為6
-    attacker->defense = (current_limit < 6) ? current_limit : 6;
-    
-    printf("⚖️ 注定的審判：防禦設為6，下回合將根據防禦差值造成傷害\n");
-    // 實際遊戲中需要設置持續效果
-}
-
-void restless_bloodlust_effect(void *self, void *target) {
-    Player *attacker = (Player *)self;
-    Player *defender = (Player *)target;
-    
-    printf("🩸 躁動的血性：將對手拉到相鄰位置並造成3點傷害！\n");
-    defender->health -= 3;
-    
-    // 實際遊戲中需要設置持續效果，下回合再次觸發
-}
-
-// ===============================
-// 卡牌定義
-// ===============================
-
-// 攻擊卡
-Card enlightened_glow = {
-    .name = "Enlightened\nGlow", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightened_glow_effect
+// Attack cards that scale with defense
+Card enlightenment_light = {
+    .name = "Enlightenment Light", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightenment_light_effect
 };
 
-Card enlightened_glory = {
-    .name = "Enlightened\nGlory", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightened_glory_effect
+Card enlightenment_glory = {
+    .name = "Enlightenment Glory", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightenment_glory_effect
 };
 
-Card enlightened_avatar = {
-    .name = "Enlightened\nAvatar", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightened_avatar_effect
+Card enlightenment_avatar = {
+    .name = "Enlightenment Avatar", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightenment_avatar_effect
 };
 
-Card disciplinary_moment = {
-    .name = "Disciplinary\nMoment", .type = TWIST, .val = 1, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = disciplinary_moment_effect
+// Defense cards with filtering mechanics
+Card confusing_echo = {
+    .name = "Confusing Echo", .type = SKILL_DEF, .val = 1, .cst = 1, .dmg = 0,
+    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = confusing_echo_effect
 };
 
-// 防禦卡
-Card confused_echo = {
-    .name = "Confused\nEcho", .type = SKILL_DEF, .val = 1, .cst = 0, .dmg = 0,
-    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = confused_echo_effect
-};
-
-Card distant_echo = {
-    .name = "Distant\nEcho", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = distant_echo_effect
+Card ancient_resonance = {
+    .name = "Ancient Resonance", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
+    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = ancient_resonance_effect
 };
 
 Card divine_summon = {
-    .name = "Divine\nSummon", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
+    .name = "Divine Summon", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
     .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = divine_summon_effect
 };
 
-Card blood_moonlight = {
-    .name = "Blood\nMoonlight", .type = TWIST, .val = 1, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = blood_moonlight_effect
-};
-
-// 移動卡
+// Movement cards with purification mechanics
 Card focused_introspection = {
-    .name = "Focused\nIntrospection", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
+    .name = "Focused Introspection", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = focused_introspection_effect
 };
 
 Card enlightened_resolve = {
-    .name = "Enlightened\nResolve", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
+    .name = "Enlightened Resolve", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = enlightened_resolve_effect
 };
 
 Card painful_purification = {
-    .name = "Painful\nPurification", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
+    .name = "Painful Purification", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = painful_purification_effect
 };
 
-Card spiritual_instinct = {
-    .name = "Spiritual\nInstinct", .type = TWIST, .val = 1, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = spiritual_instinct_effect
+// Twist cards that modify defense system
+Card punishment_moment = {
+    .name = "Punishment Moment", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-// 共同蛻變卡
-Card moonlight_meditation = {
-    .name = "Moonlight\nMeditation", .type = TWIST, .val = 2, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = moonlight_meditation_passive_effect
+Card moonlight_contemplation = {
+    .name = "Moonlight Contemplation", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-// 必殺卡
-Card blazing_bamboo_sword = {
-    .name = "Blazing\nBamboo Sword", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = blazing_bamboo_sword_effect
+Card blood_moon = {
+    .name = "Blood Moon", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card master_destiny = {
+    .name = "Master Destiny", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+// Epic cards with ultimate effects
+Card scorching_bamboo = {
+    .name = "Scorching Bamboo", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = scorching_bamboo_effect
 };
 
 Card destined_judgment = {
-    .name = "Destined\nJudgment", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .name = "Destined Judgment", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
     .defense = 6, .mov = 0, .rng = 0, .link = false, .effect = destined_judgment_effect
 };
 
-Card restless_bloodlust = {
-    .name = "Restless\nBloodlust", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = restless_bloodlust_effect
+Card restless_blood = {
+    .name = "Restless Blood", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = restless_blood_effect
 };
-
-// ===============================
-// 角色初始化
-// ===============================
 
 Fable kaguya_fable;
 
-void init_kaguya_fable(void) {
-    kaguya_fable = (Fable){
-        .name = "Kaguya-hime",
-        .Piece = {255, 192, 203, 255},  // 粉紅色代表輝夜姬
-        .health = 32,
-        .energy = 0,
-        .defense = 0,
-        .epic_threshold = 16,
-        .lane = 1  // 預設位置
-    };
-    
-    // 攻擊技能牌庫
-    kaguya_fable.skill[0] = (Deck){
-        .cards = { &enlightened_glow, &enlightened_glory, &enlightened_glory, 
-                   &enlightened_avatar, &enlightened_avatar },
-        .cnt = 5
-    };
-    
-    // 防禦技能牌庫
-    kaguya_fable.skill[1] = (Deck){
-        .cards = { &confused_echo, &distant_echo, &distant_echo,
-                   &divine_summon, &divine_summon },
-        .cnt = 5
-    };
-    
-    // 移動技能牌庫
-    kaguya_fable.skill[2] = (Deck){
-        .cards = { &focused_introspection, &enlightened_resolve, &enlightened_resolve,
-                   &painful_purification, &painful_purification },
-        .cnt = 5
-    };
-    
-    // 必殺技
-    kaguya_fable.epic[0] = blazing_bamboo_sword;
-    kaguya_fable.epic[1] = destined_judgment;
-    kaguya_fable.epic[2] = restless_bloodlust;
-    
-    printf("🌸 輝夜姬已初始化完成！\n");
+//=============================================================================
+// KAGUYA STATE MANAGEMENT
+// Shows how to coordinate defensive and filtering systems
+//=============================================================================
+
+KaguyaState* get_kaguya_state(Player* player) {
+    return (KaguyaState*)player->fable->skill;
 }
 
-void init_kaguya_state(Player *p) {
-    kaguya_state.player = p;
-    kaguya_state.defense_limit_bonus = 0;
-    kaguya_state.can_use_defense_as_attack = false;
-    kaguya_state.moonlight_meditation_count = 0;
+void init_kaguya_state(Player* player) {
+    if (!player || !player->fable) return;
     
-    printf("🌙 輝夜姬狀態已重置\n");
+    KaguyaState* kaguya_state = malloc(sizeof(KaguyaState));
+    memset(kaguya_state, 0, sizeof(KaguyaState));
+    
+    // Initialize defensive systems
+    init_defense_system(&kaguya_state->defense);
+    
+    // Initialize filtering system
+    kaguya_state->filtering.max_filters_per_turn = 3; // Balanced limit
+    kaguya_state->filtering.cards_filtered_this_turn = 0;
+    kaguya_state->filtering.divine_召換_active = false;
+    kaguya_state->filtering.cache_count = 0;
+    
+    // Initialize moonlight system
+    kaguya_state->moonlight.moonlight_phases = 0;
+    kaguya_state->moonlight.defense_per_phase = 2;
+    kaguya_state->moonlight.blood_moon_active = false;
+    kaguya_state->moonlight.lunar_cycle_progress = 0;
+    
+    // Initialize other systems
+    kaguya_state->contemplation_active = false;
+    kaguya_state->purification_stacks = 0;
+    kaguya_state->invulnerability_active = false;
+    
+    player->fable->skill = (Deck*)kaguya_state;
+    
+    printf("Kaguya's celestial defense systems initialized\n");
 }
+
+//=============================================================================
+// TURN MANAGEMENT WITH CONDITIONAL EFFECTS
+// Shows how to implement effects that trigger based on game state
+//=============================================================================
+
+void kaguya_turn_start(Player* player) {
+    KaguyaState* kaguya_state = get_kaguya_state(player);
+    if (!kaguya_state) return;
+    
+    // Reset turn-based counters
+    kaguya_state->filtering.cards_filtered_this_turn = 0;
+    
+    // Check for moonlight contemplation effect (turn end defense)
+    if (kaguya_state->contemplation_active) {
+        int defense_gain = kaguya_state->moonlight.defense_per_phase;
+        player->defense = MIN(player->defense + defense_gain, 
+                             kaguya_state->defense.current_defense_cap);
+        printf("Moonlight Contemplation: Kaguya gains %d defense\n", defense_gain);
+    }
+    
+    printf("Kaguya begins turn - filtering available, defense: %d/%d\n",
+           player->defense, kaguya_state->defense.current_defense_cap);
+}
+
+void kaguya_turn_end(Player* player) {
+    KaguyaState* kaguya_state = get_kaguya_state(player);
+    if (!kaguya_state) return;
+    
+    // Track consecutive high defense turns
+    if (player->defense >= 3) {
+        kaguya_state->defense.consecutive_high_defense_turns++;
+        printf("Kaguya maintains high defense (streak: %d)\n", 
+               kaguya_state->defense.consecutive_high_defense_turns);
+    } else {
+        kaguya_state->defense.consecutive_high_defense_turns = 0;
+    }
+    
+    // Blood moon effect - reset every 3 defense
+    if (kaguya_state->moonlight.blood_moon_active && player->defense >= 3) {
+        draw_hand(player, 1);
+        printf("Blood Moon: Kaguya draws a card for high defense\n");
+    }
+    
+    // Advance lunar cycle
+    kaguya_state->moonlight.lunar_cycle_progress++;
+    if (kaguya_state->moonlight.lunar_cycle_progress >= 4) {
+        kaguya_state->moonlight.lunar_cycle_progress = 0;
+        kaguya_state->moonlight.moonlight_phases = 
+            (kaguya_state->moonlight.moonlight_phases + 1) % 4;
+        printf("Lunar cycle advances to phase %d\n", kaguya_state->moonlight.moonlight_phases);
+    }
+}
+
+void kaguya_on_damage_taken(Player* kaguya_player, int damage, Player* source) {
+    if (!kaguya_player || damage <= 0) return;
+    
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya_player);
+    if (!kaguya_state) return;
+    
+    // Reset consecutive defense streak
+    kaguya_state->defense.consecutive_high_defense_turns = 0;
+    
+    printf("Kaguya's defensive focus is disrupted by %d damage\n", damage);
+}
+
+//=============================================================================
+// KAGUYA'S CARD EFFECT IMPLEMENTATIONS
+// These demonstrate conditional effects and filtering mechanics
+//=============================================================================
+
+void enlightenment_light_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Range 1, Damage 1+O, if you have 3+ defense, damage +1"
+    
+    int base_damage = 1;
+    int bonus_damage = (kaguya->defense >= 3) ? 1 : 0;
+    int total_damage = base_damage + bonus_damage;
+    
+    opponent->health -= total_damage;
+    
+    if (bonus_damage > 0) {
+        printf("Enlightenment Light enhanced by high defense! Total damage: %d\n", total_damage);
+    } else {
+        printf("Enlightenment Light deals %d damage\n", total_damage);
+    }
+}
+
+void confusing_echo_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Defense 1+O, show top 1 card of deck"
+    // "If it's a defense card (not universal), add to hand"
+    // "Otherwise, discard or put back on top"
+    
+    int defense_gain = 1;
+    kaguya->defense = MIN(kaguya->defense + defense_gain, 
+                         kaguya_state->defense.current_defense_cap);
+    
+    // Filter one card from deck top
+    kaguya_filter_and_choose(kaguya, 1, FILTER_DEFENSE_CARDS);
+    
+    printf("Confusing Echo: +%d defense and deck filtering\n", defense_gain);
+}
+
+void ancient_resonance_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Defense 2+O, show top 2 cards of deck"
+    // Enhanced filtering for higher level
+    
+    int defense_gain = 2;
+    kaguya->defense = MIN(kaguya->defense + defense_gain, 
+                         kaguya_state->defense.current_defense_cap);
+    
+    kaguya_filter_and_choose(kaguya, 2, FILTER_DEFENSE_CARDS);
+    
+    printf("Ancient Resonance: Enhanced filtering and defense\n");
+}
+
+void divine_summon_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Defense 3+O, show top 3 cards of deck"
+    // Maximum filtering power
+    
+    int defense_gain = 3;
+    kaguya->defense = MIN(kaguya->defense + defense_gain, 
+                         kaguya_state->defense.current_defense_cap);
+    
+    kaguya_filter_and_choose(kaguya, 3, FILTER_DEFENSE_CARDS);
+    
+    printf("Divine Summon: Maximum deck filtering power\n");
+}
+
+void focused_introspection_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Range O, Damage 1, can lose 1 life to remove 1 card from hand/discard"
+    
+    int damage = 1;
+    opponent->health -= damage;
+    
+    // Option to purify by losing life
+    if (kaguya->health > 1) {
+        // Simplified: always use purification if available
+        kaguya->health -= 1;
+        kaguya_state->purification_stacks++;
+        
+        // Remove a card from hand (simplified choice)
+        if (kaguya->hand.cnt > 0) {
+            Card* removed = kaguya->hand.cards[kaguya->hand.cnt - 1];
+            kaguya->hand.cnt--;
+            // Card is completely removed from game
+            printf("Focused Introspection: Kaguya purifies by removing %s\n", removed->name);
+        }
+    }
+    
+    printf("Focused Introspection: Damage and purification\n");
+}
+
+void enlightened_resolve_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Range O, Damage 2, can lose 1 life to remove 1 card from hand/discard"
+    // "Persistent: Next turn start, if opponent beyond range 4-O, deal 4 damage"
+    
+    int damage = 2;
+    opponent->health -= damage;
+    
+    // Set up persistent effect for next turn
+    // In full implementation, would add to effect system
+    printf("Enlightened Resolve: Persistent effect set for next turn\n");
+    
+    // Purification option
+    if (kaguya->health > 1) {
+        kaguya->health -= 1;
+        kaguya_state->purification_stacks++;
+        printf("Enlightened Resolve: Purification through sacrifice\n");
+    }
+}
+
+void painful_purification_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Range O, Damage 3, can lose 1 life to remove 1 card from hand/discard"
+    // "Persistent: Next turn start, if opponent beyond range 4-O, deal 6 damage"
+    
+    int damage = 3;
+    opponent->health -= damage;
+    
+    // Maximum purification power
+    if (kaguya->health > 1) {
+        kaguya->health -= 1;
+        kaguya_state->purification_stacks += 2; // Extra purification for high level
+        printf("Painful Purification: Maximum purification achieved\n");
+    }
+    
+    printf("Painful Purification: Ultimate range punishment prepared\n");
+}
+
+void scorching_bamboo_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Persistent: Until next turn start, you don't take damage or lose life"
+    
+    kaguya_state->invulnerability_active = true;
+    
+    printf("Scorching Bamboo: Kaguya becomes invulnerable until next turn!\n");
+    // In full implementation, would set up persistent effect
+}
+
+void destined_judgment_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Defense 6, Persistent: Next turn start, if opponent's defense < yours"
+    // "They lose X life where X = defense difference"
+    
+    kaguya->defense = MIN(kaguya->defense + 6, kaguya_state->defense.current_defense_cap);
+    
+    // Set up judgment for next turn
+    printf("Destined Judgment: Divine judgment prepared based on defense comparison\n");
+    
+    // Immediate check for demonstration
+    if (opponent->defense < kaguya->defense) {
+        int life_loss = kaguya->defense - opponent->defense;
+        printf("Judgment preview: Would deal %d life loss next turn\n", life_loss);
+    }
+}
+
+void restless_blood_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    KaguyaState* kaguya_state = get_kaguya_state(kaguya);
+    
+    // "Move opponent adjacent and deal 3 damage"
+    // "Persistent: Next turn start, can move opponent adjacent and deal 3 damage"
+    
+    // Move opponent adjacent
+    opponent->pos = kaguya->pos + ((opponent->pos < kaguya->pos) ? -1 : 1);
+    opponent->pos = MAX(-4, MIN(4, opponent->pos));
+    
+    // Deal damage
+    opponent->health -= 3;
+    
+    printf("Restless Blood: Opponent repositioned and damaged, effect continues!\n");
+}
+
+//=============================================================================
+// KAGUYA CHARACTER INITIALIZATION
+// Shows how to set up a defense-focused character with filtering capabilities
+//=============================================================================
+
+void init_kaguya_fable(void) {
+    kaguya_fable = (Fable){
+        .name = "Kaguya",
+        .Piece = {200, 200, 255, 255}, // Soft blue for moonlight
+        .health = 32,
+        .energy = 0,
+        .defense = 6, // High base defense cap
+        .epic_threshold = 16,
+        .lane = 0
+    };
+    
+    // Set up skill decks emphasizing defense and filtering
+    kaguya_fable.skill[0] = (Deck){ // Attack skills that scale with defense
+        .cards = {&enlightenment_light, &enlightenment_glory, &enlightenment_glory, 
+                 &enlightenment_avatar, &enlightenment_avatar},
+        .cnt = 5
+    };
+    
+    kaguya_fable.skill[1] = (Deck){ // Defense skills with filtering
+        .cards = {&confusing_echo, &ancient_resonance, &ancient_resonance, 
+                 &divine_summon, &divine_summon},
+        .cnt = 5
+    };
+    
+    kaguya_fable.skill[2] = (Deck){ // Movement skills with purification
+        .cards = {&focused_introspection, &enlightened_resolve, &enlightened_resolve, 
+                 &painful_purification, &painful_purification},
+        .cnt = 5
+    };
+    
+    // Epic cards with ultimate defensive effects
+    kaguya_fable.epic[0] = scorching_bamboo;
+    kaguya_fable.epic[1] = destined_judgment;
+    kaguya_fable.epic[2] = restless_blood;
+}
+
+void setup_kaguya_player(Player* player) {
+    if (!player) return;
+    
+    init_kaguya_fable();
+    player->fable = &kaguya_fable;
+    player->health = kaguya_fable.health;
+    player->power = 0;
+    player->defense = 0;
+    player->pos = kaguya_fable.lane;
+    
+    // Initialize Kaguya's defensive systems
+    init_kaguya_state(player);
+    
+    // Set up starting deck with extra defense cards for filtering synergy
+    for (int i = 0; i < 3; i++) {
+        add_deck(&player->draw, &Attack1);
+        add_deck(&player->draw, &Defense1);
+        add_deck(&player->draw, &Move1);
+    }
+    
+    // Add extra defense cards for filtering
+    add_deck(&player->draw, &Defense1);
+    add_deck(&player->draw, &Defense2);
+    
+    // Add starting skills
+    add_deck(&player->draw, &enlightenment_light);
+    add_deck(&player->draw, &confusing_echo);
+    add_deck(&player->draw, &focused_introspection);
+    
+    shuffle_deck(&player->draw);
+    draw_hand(player, HAND_SIZE);
+    
+    printf("Kaguya descends from the moon! Her defensive systems are ready.\n");
+    printf("Remember: Kaguya excels at filtering cards and defensive play!\n");
+}
+
+//=============================================================================
+// UTILITY FUNCTIONS FOR DEFENSIVE GAMEPLAY
+// These help integrate Kaguya's systems with the broader game
+//=============================================================================
+
+bool kaguya_can_filter_cards(Player* player) {
+    KaguyaState* kaguya_state = get_kaguya_state(player);
+    return kaguya_state && (kaguya_state->filtering.cards_filtered_this_turn < 
+                           kaguya_state->filtering.max_filters_per_turn);
+}
+
+int kaguya_get_defense_cap(Player* player) {
+    KaguyaState* kaguya_state = get_kaguya_state(player);
+    return kaguya_state ? kaguya_state->defense.current_defense_cap : 6;
+}
+
+bool kaguya_is_in_punishment_mode(Player* player) {
+    KaguyaState* kaguya_state = get_kaguya_state(player);
+    return kaguya_state && kaguya_state->defense.punishment_mode_active;
+}
+
+// This demonstrates how filtering can be used by other game systems
+void kaguya_emergency_filter(Player* player) {
+    // Emergency filtering when hand is empty or in danger
+    if (player->hand.cnt == 0) {
+        printf("Emergency filtering activated!\n");
+        kaguya_filter_and_choose(player, 3, FILTER_DEFENSE_CARDS);
+    }
+}
+
+// Educational note: Kaguya's design teaches us about:
+// 1. Filtering algorithms - essential for any data processing
+// 2. Conditional effects - making abilities that respond to game state
+// 3. Resource management with dynamic caps
+// 4. Defensive programming patterns that protect and enhance
+// These concepts apply far beyond games into general software development!
