@@ -13,13 +13,4 @@ extern Card unleashed_firepower;
 extern Card transformed_senses;
 extern Card unleashed_fury;
 extern Card energy_shield;
-extern Card Attack1;
-extern Card Defense1;
-extern Card Move1;
-extern Card Attack2;
-extern Card Defense2;
-extern Card Move2;
-extern Card Attack3;
-extern Card Defense3;
-extern Card Move3;
 #endif

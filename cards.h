@@ -1,7 +1,12 @@
 #ifndef CARDS_H_INCLUDED
 #define CARDS_H_INCLUDED
 #include "base.h"
-#include "declare.h"
+#include "red_hood.h"
+#include "snow_white.h"
+#include "match-girl.h"
+#include "alice.h"
+#include "mulan.h"
+#include "kaguya.h"
 //-------------------- 機制 --------------------
 void add_deck(Deck *deck, Card *card);
 
