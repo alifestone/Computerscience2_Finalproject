@@ -4,14 +4,14 @@
 #include "base.h"
 
 // 輝夜姬狀態管理結構 - Use different struct name to avoid conflicts
-typedef struct KaguyaGameState {
+/*typedef struct KaguyaGameState {
     Player *player;                  // 指向使用輝夜姬的玩家
     int defense_limit_bonus;         // 防禦上限加成（透過蛻變牌獲得）
     bool can_use_defense_as_attack;  // 本回合是否可以將防禦牌當攻擊牌使用
     bool moonlight_meditation_count; // 月下沉思蛻變牌的數量（可累積）
 } KaguyaGameState;
 
-extern KaguyaGameState kaguya_state;
+extern KaguyaGameState kaguya_state;*/
 extern Fable kaguya_fable;
 
 // 初始化函式

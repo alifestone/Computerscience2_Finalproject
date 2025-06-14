@@ -260,7 +260,7 @@ void init_red_hood_state(Player* player) {
     rh_state->consecutive_tech_uses = 0;
     rh_state->cached_card = NULL;
     
-    player->fable->skill = (Deck*)rh_state;
+    player->fable->character_state = rh_state;
     
     printf("Red Hood's combat systems online - ready for tactical combat!\n");
 }

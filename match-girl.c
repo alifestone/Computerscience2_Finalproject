@@ -13,7 +13,7 @@
 // 5. Persistent effects - ongoing game state modifications
 
 // Enhanced Energy System - Match Girl's unique resource that grows from opponent actions
-typedef struct EnergySystem {
+/*typedef struct EnergySystem {
     int current_energy;              // Current energy available
     int max_energy;                  // Maximum energy that can be stored
     int energy_per_fire_card;        // Energy gained when opponent uses fire cards
@@ -58,7 +58,7 @@ typedef struct EnhancedFireCard {
     bool can_be_used_as_defense;        // Rule restrictions  
     bool can_be_used_as_movement;       // Rule restrictions
     char restriction_reason[64];        // Why it's restricted
-} EnhancedFireCard;
+} EnhancedFireCard;*/
 
 // Global enhanced fire supply with better tracking
 static EnhancedFireCard enhanced_fire_supply[12];
