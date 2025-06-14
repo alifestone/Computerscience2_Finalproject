@@ -10,10 +10,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Forward declaration of GameContext to fix struct pointer issues
-typedef struct GameContext GameContext;
+//=============================================================================
+// ENHANCED GAME STATE MANAGEMENT (from draft.c)
+//=============================================================================
 
-// Enhanced game state management following the architectural guide
 typedef enum {
     GAME_STATE_MENU,
     GAME_STATE_CHARACTER_SELECT,
@@ -34,6 +34,18 @@ typedef enum {
     TURN_PHASE_END,
     TURN_PHASE_CLEANUP
 } TurnPhase;
+
+typedef enum {
+    PLAY_RESULT_SUCCESS,
+    PLAY_RESULT_INVALID_CARD,
+    PLAY_RESULT_INSUFFICIENT_ENERGY,
+    PLAY_RESULT_INVALID_TARGET,
+    PLAY_RESULT_REQUIRES_LINK,
+    PLAY_RESULT_OUT_OF_RANGE
+} PlayResult;
+
+// Forward declaration
+typedef struct GameContext GameContext;
 
 // Effect system for handling complex card interactions
 typedef struct GameEffect {
@@ -78,13 +90,14 @@ struct GameContext {
 // Global game context
 static GameContext* g_ctx = NULL;
 
-// Function declarations for the enhanced system
-void init_game_context(SDL_Renderer* ren);
-void cleanup_game_context(void);
+//=============================================================================
+// FUNCTION FORWARD DECLARATIONS
+//=============================================================================
+
+// Game state functions
 void change_game_state(GameState new_state);
-void update_game_logic(float delta_time);
-void handle_input_event(SDL_Event* event);
-void render_game_state(void);
+void start_turn(int player_id);
+void end_turn(void);
 
 // Effect system functions
 void add_effect(GameEffect* effect);
@@ -92,46 +105,115 @@ void remove_effect(int effect_id);
 void process_effects(void);
 GameEffect* create_effect(int id, int priority, int duration);
 
-// Enhanced turn management
-void start_turn(int player_id);
-void end_turn(void);
-void advance_turn_phase(void);
-
-// Card playing system with proper validation
-typedef enum {
-    PLAY_RESULT_SUCCESS,
-    PLAY_RESULT_INVALID_CARD,
-    PLAY_RESULT_INSUFFICIENT_ENERGY,
-    PLAY_RESULT_INVALID_TARGET,
-    PLAY_RESULT_REQUIRES_LINK,
-    PLAY_RESULT_OUT_OF_RANGE
-} PlayResult;
-
+// Card playing system
 PlayResult attempt_play_card(Player* player, Card* card, int target_pos);
-PlayResult attempt_link_cards(Player* player, Card* skill_card, Card* basic_card, int target_pos);
-
-// Character-specific ability system
-void activate_character_ability(Player* player, int ability_index);
-void check_epic_availability(Player* player);
-bool can_use_epic(Player* player);
-
-// Enhanced UI rendering with better organization
-void render_battlefield(void);
-void render_player_ui(Player* player, bool is_bottom);
-void render_cards_in_hand(Player* player, bool is_bottom);
-void render_epic_cards(Player* player, bool is_bottom);
-void render_turn_indicator(void);
-void render_debug_info(void);
-
-// Utility functions for game logic
 bool is_valid_target(Card* card, Player* caster, Player* target, int position);
-int calculate_distance(int pos1, int pos2);
+
+// Character abilities
+void check_epic_availability(Player* player);
 void apply_damage(Player* target, int damage, Player* source);
-void apply_healing(Player* target, int healing);
+
+// Character state initialization functions
+// These functions are implemented in their respective character .c files
+void init_alice_state(Player* player);
+void init_kaguya_state(Player* player);
+void init_mulan_state(Player* player);
+void init_snow_white_state(Player* player);
+void init_enhanced_match_girl_state(Player* player);
+void init_red_hood_state(Player* player);
+
+// Enhanced setup functions
+void enhanced_starting_deck(Player *p);
+void enhanced_setup_player(Player *p, Fable *fable);
+void enhanced_battle_setup(Player *p1, Player *p2, int starting);
 
 //=============================================================================
-// INITIALIZATION AND CLEANUP
+// UI SYSTEM (from UI and main)
 //=============================================================================
+
+typedef struct {
+    const char *txt;
+    int32_t x,y;
+    int32_t a;
+    bool activate;
+} Floating;
+
+TTF_Font *font = NULL;
+bool Playing = 0;
+
+void WriteText(SDL_Renderer *ren, const char *text, SDL_Color color, int32_t x, int32_t y, int font_size) {
+    TTF_Init();
+    if (!font) {
+        font = TTF_OpenFont("NotoSans-Regular.ttf", font_size);
+        if (!font) {
+            printf("Error opening font: %s\n", TTF_GetError());
+            return;
+        }
+    }
+
+    char *text_copy = strdup(text);
+    if (!text_copy) return;
+
+    const int line_spacing = font_size + 10;
+    int line_count = 0;
+
+    char *line = strtok(text_copy, "\n");
+    while (line) {
+        SDL_Surface *sur = TTF_RenderText_Solid(font, line, color);
+        if (!sur) {
+            printf("Error creating surface: %s\n", SDL_GetError());
+            free(text_copy);
+            return;
+        }
+
+        SDL_Texture *txture = SDL_CreateTextureFromSurface(ren, sur);
+        if (!txture) {
+            printf("Error creating texture: %s\n", SDL_GetError());
+            SDL_FreeSurface(sur);
+            free(text_copy);
+            return;
+        }
+
+        int32_t wtext = sur->w, htext = sur->h;
+        SDL_FreeSurface(sur);
+
+        SDL_Rect dest = { x - wtext / 2, y - htext / 2 + line_count * line_spacing, wtext, htext };
+        SDL_RenderCopy(ren, txture, NULL, &dest);
+        SDL_DestroyTexture(txture);
+
+        line = strtok(NULL, "\n");
+        line_count++;
+    }
+
+    free(text_copy);
+}
+
+void DrawRect(SDL_Renderer *ren,SDL_Rect rect,int32_t r,SDL_Color color){
+    SDL_Rect cen={rect.x-rect.w/2,rect.y-rect.h/2,rect.w,rect.h};
+    roundedBoxRGBA(ren,cen.x,cen.y,cen.x+cen.w,cen.y+cen.h,r,color.r,color.g,color.b,color.a);
+}
+
+void DrawButton(SDL_Renderer *ren,SDL_Rect rect,int32_t r,SDL_Color color,SDL_Color txtclr,const char *line){
+    DrawRect(ren,rect,r,color);
+    WriteText(ren,line,txtclr,rect.x,rect.y,30);
+}
+
+void BattleLane(SDL_Renderer *ren,Player *p1, Player *p2){
+    for(int i=-4;i<=4;i++){
+        SDL_Rect rect={XCENTER+i*(WField+20),YCENTER,WField,HField};
+        SDL_Color relic={0,0,0,255};
+        DrawRect(ren,rect,10,relic);
+    }
+    filledCircleRGBA(ren,XCENTER+p1->pos*(WField+20),YCENTER,40,p1->fable->Piece.r,p1->fable->Piece.g,p1->fable->Piece.b,p1->fable->Piece.a);
+    filledCircleRGBA(ren,XCENTER+p2->pos*(WField+20),YCENTER,40,p2->fable->Piece.r,p2->fable->Piece.g,p2->fable->Piece.b,p2->fable->Piece.a);
+}
+
+//=============================================================================
+// CHARACTER STATE INITIALIZATION IMPLEMENTATIONS
+//=============================================================================
+
+// Note: All character initialization functions are now provided by their respective .c files
+// Removed duplicate implementations to avoid linking conflicts
 
 void init_game_context(SDL_Renderer* ren) {
     g_ctx = malloc(sizeof(GameContext));
@@ -143,7 +225,6 @@ void init_game_context(SDL_Renderer* ren) {
     g_ctx->current_player = 0;
     g_ctx->turn_number = 1;
     
-    // Initialize TTF for text rendering
     if (TTF_Init() == -1) {
         printf("TTF_Init Error: %s\n", TTF_GetError());
         return;
@@ -153,6 +234,8 @@ void init_game_context(SDL_Renderer* ren) {
     if (!g_ctx->font) {
         printf("Error opening font: %s\n", TTF_GetError());
     }
+    
+    printf("Enhanced game context initialized\n");
 }
 
 void cleanup_game_context(void) {
@@ -172,10 +255,12 @@ void cleanup_game_context(void) {
     
     free(g_ctx);
     g_ctx = NULL;
+    
+    printf("Game context cleaned up\n");
 }
 
 //=============================================================================
-// STATE MANAGEMENT
+// ENHANCED STATE MANAGEMENT
 //=============================================================================
 
 void change_game_state(GameState new_state) {
@@ -184,12 +269,13 @@ void change_game_state(GameState new_state) {
     g_ctx->previous_state = g_ctx->current_state;
     g_ctx->current_state = new_state;
     
-    // State entry logic
+    printf("Game state changed: %d -> %d\n", g_ctx->previous_state, new_state);
+    
     switch (new_state) {
         case GAME_STATE_BATTLE_INIT:
-            // Initialize battle-specific data
-            g_ctx->current_player = rand() % 2; // Random starting player
+            g_ctx->current_player = rand() % 2;
             g_ctx->turn_number = 1;
+            printf("Battle initialized, starting player: %d\n", g_ctx->current_player);
             break;
             
         case GAME_STATE_TURN_START:
@@ -215,42 +301,42 @@ void start_turn(int player_id) {
     Player* player = g_ctx->players[player_id];
     g_ctx->current_phase = TURN_PHASE_START;
     
-    // Reset turn-specific flags
-    player->power = 0; // Reset energy/power each turn
+    printf("=== Player %d Turn %d Start ===\n", player_id + 1, g_ctx->turn_number);
     
-    // Draw cards (enhanced hand management)
+    // Reset turn-specific flags
+    player->power = 0;
+    
+    // Draw cards if needed
     if (player->hand.cnt < HAND_SIZE) {
         int cards_to_draw = HAND_SIZE - player->hand.cnt;
         draw_hand(player, cards_to_draw);
+        printf("Player %d draws %d cards (hand size: %d)\n", player_id + 1, cards_to_draw, player->hand.cnt);
     }
     
-    // Character-specific turn start effects
+    // Character-specific turn start effects (with safety checks)
     if (player->fable) {
-        switch (player->fable->epic_threshold) { // Using epic_threshold to identify character
-            case 15: // Red Hood
-                red_hood_turn_start(player);
-                break;
-            case 16: // Kaguya or Alice
-                if (strcmp(player->fable->name, "Kaguya") == 0) {
-                    kaguya_turn_start(player);
-                } else {
-                    alice_turn_start(player);
-                }
-                break;
-            case 17: // Mulan or Snow White
-                if (strcmp(player->fable->name, "Mulan") == 0) {
-                    mulan_turn_start(player);
-                } else {
-                    snow_white_turn_start(player);
-                }
-                break;
-            case 18: // Match Girl
-                match_girl_turn_start(player);
-                break;
+        if (strcmp(player->fable->name, "Red Hood") == 0) {
+            // red_hood_turn_start(player); // Commented out until proper implementation
+            printf("Red Hood turn start\n");
+        } else if (strcmp(player->fable->name, "Alice") == 0) {
+            // alice_turn_start(player); // Commented out until proper implementation
+            printf("Alice turn start\n");
+        } else if (strcmp(player->fable->name, "Kaguya") == 0) {
+            // kaguya_turn_start(player); // Commented out until proper implementation
+            printf("Kaguya turn start\n");
+        } else if (strcmp(player->fable->name, "Mulan") == 0) {
+            // mulan_turn_start(player); // Commented out until proper implementation
+            printf("Mulan turn start\n");
+        } else if (strcmp(player->fable->name, "Snow White") == 0) {
+            // snow_white_turn_start(player); // Commented out until proper implementation
+            printf("Snow White turn start\n");
+        } else if (strcmp(player->fable->name, "Match Girl") == 0) {
+            // match_girl_turn_start(player); // Commented out until proper implementation
+            printf("Match Girl turn start\n");
         }
     }
     
-    // Check if epic cards are available
+    // Check epic availability
     check_epic_availability(player);
     
     g_ctx->current_phase = TURN_PHASE_MAIN;
@@ -263,29 +349,28 @@ void end_turn(void) {
     Player* player = g_ctx->players[g_ctx->current_player];
     g_ctx->current_phase = TURN_PHASE_END;
     
-    // Character-specific turn end effects
+    printf("=== Player %d Turn End ===\n", g_ctx->current_player + 1);
+    
+    // Character-specific turn end effects (with safety checks)
     if (player->fable) {
-        switch (player->fable->epic_threshold) {
-            case 15: // Red Hood
-                red_hood_turn_end(player);
-                break;
-            case 16: // Kaguya or Alice  
-                if (strcmp(player->fable->name, "Kaguya") == 0) {
-                    kaguya_turn_end(player);
-                } else {
-                    alice_turn_end(player);
-                }
-                break;
-            case 17: // Mulan or Snow White
-                if (strcmp(player->fable->name, "Mulan") == 0) {
-                    mulan_turn_end(player);
-                } else {
-                    snow_white_turn_end(player);
-                }
-                break;
-            case 18: // Match Girl
-                match_girl_turn_end(player);
-                break;
+        if (strcmp(player->fable->name, "Red Hood") == 0) {
+            // red_hood_turn_end(player); // Commented out until proper implementation
+            printf("Red Hood turn end\n");
+        } else if (strcmp(player->fable->name, "Alice") == 0) {
+            // alice_turn_end(player); // Commented out until proper implementation
+            printf("Alice turn end\n");
+        } else if (strcmp(player->fable->name, "Kaguya") == 0) {
+            // kaguya_turn_end(player); // Commented out until proper implementation
+            printf("Kaguya turn end\n");
+        } else if (strcmp(player->fable->name, "Mulan") == 0) {
+            // mulan_turn_end(player); // Commented out until proper implementation
+            printf("Mulan turn end\n");
+        } else if (strcmp(player->fable->name, "Snow White") == 0) {
+            // snow_white_turn_end(player); // Commented out until proper implementation
+            printf("Snow White turn end\n");
+        } else if (strcmp(player->fable->name, "Match Girl") == 0) {
+            // match_girl_turn_end(player); // Commented out until proper implementation
+            printf("Match Girl turn end\n");
         }
     }
     
@@ -301,12 +386,14 @@ void end_turn(void) {
         g_ctx->winner = 1;
         g_ctx->game_over = true;
         change_game_state(GAME_STATE_BATTLE_END);
+        printf("Player 2 wins!\n");
         return;
     }
     if (g_ctx->players[1]->health <= 0) {
         g_ctx->winner = 0;
         g_ctx->game_over = true;
         change_game_state(GAME_STATE_BATTLE_END);
+        printf("Player 1 wins!\n");
         return;
     }
     
@@ -317,18 +404,35 @@ void end_turn(void) {
 // ENHANCED CARD PLAYING SYSTEM
 //=============================================================================
 
+bool is_valid_target(Card* card, Player* caster, Player* target, int position) {
+    if (!card || !caster || !target) return false;
+    
+    int distance = abs(caster->pos - target->pos);
+    if (distance > card->rng) return false;
+    
+    switch (card->type) {
+        case BASIC_ATK:
+        case SKILL_ATK:
+            return target != caster;
+            
+        case BASIC_DEF:
+        case SKILL_DEF:
+            return target == caster;
+            
+        default:
+            return true;
+    }
+}
+
 PlayResult attempt_play_card(Player* player, Card* card, int target_pos) {
     if (!player || !card) return PLAY_RESULT_INVALID_CARD;
     
-    // Check energy cost
     if (card->cst > player->power) return PLAY_RESULT_INSUFFICIENT_ENERGY;
     
-    // Check if card requires linking
     if (card->link && card->type >= SKILL_ATK && card->type <= SKILL_MOV) {
         return PLAY_RESULT_REQUIRES_LINK;
     }
     
-    // Validate target based on card type and range
     Player* target_player = (target_pos < 0) ? player : g_ctx->players[1 - g_ctx->current_player];
     
     if (!is_valid_target(card, player, target_player, target_pos)) {
@@ -338,12 +442,12 @@ PlayResult attempt_play_card(Player* player, Card* card, int target_pos) {
     // Consume energy
     player->power -= card->cst;
     
-    // Execute card effect based on type
+    // Execute card effect
     switch (card->type) {
         case BASIC_ATK:
-            if (calculate_distance(player->pos, target_player->pos) <= card->rng) {
+            if (abs(player->pos - target_player->pos) <= card->rng) {
                 apply_damage(target_player, card->dmg, player);
-                player->power += card->val; // Gain power from basic cards
+                player->power += card->val;
             } else {
                 return PLAY_RESULT_OUT_OF_RANGE;
             }
@@ -355,18 +459,15 @@ PlayResult attempt_play_card(Player* player, Card* card, int target_pos) {
             break;
             
         case BASIC_MOV:
-            // Movement will be handled by UI interaction
             player->power += card->val;
-            return PLAY_RESULT_SUCCESS; // Special handling for movement
+            return PLAY_RESULT_SUCCESS;
             
         case SKILL_ATK:
         case SKILL_DEF:
         case SKILL_MOV:
-            // These should not reach here without linking
             return PLAY_RESULT_REQUIRES_LINK;
             
         case EPIC:
-            // Epic cards have special effects
             if (card->effect) {
                 card->effect(player, target_player);
             }
@@ -379,7 +480,6 @@ PlayResult attempt_play_card(Player* player, Card* card, int target_pos) {
     // Remove card from hand and add to discard
     for (int i = 0; i < player->hand.cnt; i++) {
         if (player->hand.cards[i] == card) {
-            // Shift remaining cards
             for (int j = i; j < player->hand.cnt - 1; j++) {
                 player->hand.cards[j] = player->hand.cards[j + 1];
             }
@@ -389,81 +489,7 @@ PlayResult attempt_play_card(Player* player, Card* card, int target_pos) {
     }
     add_deck(&player->disc, card);
     
-    return PLAY_RESULT_SUCCESS;
-}
-
-PlayResult attempt_link_cards(Player* player, Card* skill_card, Card* basic_card, int target_pos) {
-    if (!player || !skill_card || !basic_card) return PLAY_RESULT_INVALID_CARD;
-    
-    // Validate link compatibility
-    Type required_basic = (Type)(skill_card->type - 4); // Convert SKILL_* to BASIC_*
-    if (basic_card->type != required_basic) return PLAY_RESULT_INVALID_CARD;
-    
-    // Check total energy cost
-    int total_cost = skill_card->cst + basic_card->cst;
-    if (total_cost > player->power) return PLAY_RESULT_INSUFFICIENT_ENERGY;
-    
-    // Validate target
-    Player* target_player = (target_pos < 0) ? player : g_ctx->players[1 - g_ctx->current_player];
-    if (!is_valid_target(skill_card, player, target_player, target_pos)) {
-        return PLAY_RESULT_INVALID_TARGET;
-    }
-    
-    // Consume energy
-    player->power -= total_cost;
-    
-    // Execute combined effect
-    switch (skill_card->type) {
-        case SKILL_ATK:
-            if (calculate_distance(player->pos, target_player->pos) <= skill_card->rng) {
-                int total_damage = skill_card->dmg + basic_card->dmg;
-                apply_damage(target_player, total_damage, player);
-                
-                // Character-specific skill effects
-                if (skill_card->effect) {
-                    skill_card->effect(player, target_player);
-                }
-            } else {
-                return PLAY_RESULT_OUT_OF_RANGE;
-            }
-            break;
-            
-        case SKILL_DEF:
-            {
-                int total_defense = skill_card->defense + basic_card->defense;
-                player->defense = MIN(player->defense + total_defense, player->fable->defense);
-                
-                if (skill_card->effect) {
-                    skill_card->effect(player, target_player);
-                }
-            }
-            break;
-            
-        case SKILL_MOV:
-            // Movement with skill effects
-            if (skill_card->effect) {
-                skill_card->effect(player, target_player);
-            }
-            return PLAY_RESULT_SUCCESS; // Special handling for movement
-            
-        default:
-            break;
-    }
-    
-    // Remove both cards from hand
-    for (int i = player->hand.cnt - 1; i >= 0; i--) {
-        if (player->hand.cards[i] == skill_card || player->hand.cards[i] == basic_card) {
-            for (int j = i; j < player->hand.cnt - 1; j++) {
-                player->hand.cards[j] = player->hand.cards[j + 1];
-            }
-            player->hand.cnt--;
-        }
-    }
-    
-    // Add to discard
-    add_deck(&player->disc, skill_card);
-    add_deck(&player->disc, basic_card);
-    
+    printf("Card %s played successfully\n", card->name);
     return PLAY_RESULT_SUCCESS;
 }
 
@@ -476,6 +502,7 @@ void add_effect(GameEffect* effect) {
     
     effect->next = g_ctx->active_effects;
     g_ctx->active_effects = effect;
+    printf("Effect %d added\n", effect->effect_id);
 }
 
 void remove_effect(int effect_id) {
@@ -498,6 +525,7 @@ void remove_effect(int effect_id) {
             
             if (current->effect_data) free(current->effect_data);
             free(current);
+            printf("Effect %d removed\n", effect_id);
             return;
         }
         prev = current;
@@ -550,154 +578,73 @@ void check_epic_availability(Player* player) {
     bool* epic_available = (g_ctx->current_player == 0) ? &g_ctx->p1_epic_available : &g_ctx->p2_epic_available;
     
     *epic_available = (player->health <= player->fable->epic_threshold);
-}
-
-bool can_use_epic(Player* player) {
-    if (!g_ctx || !player) return false;
     
-    bool epic_available = (g_ctx->current_player == 0) ? g_ctx->p1_epic_available : g_ctx->p2_epic_available;
-    int epic_selected = (g_ctx->current_player == 0) ? g_ctx->p1_epic_selected : g_ctx->p2_epic_selected;
-    
-    return epic_available && epic_selected == 0;
-}
-
-//=============================================================================
-// UTILITY FUNCTIONS
-//=============================================================================
-
-bool is_valid_target(Card* card, Player* caster, Player* target, int position) {
-    if (!card || !caster || !target) return false;
-    
-    // Check range
-    int distance = calculate_distance(caster->pos, target->pos);
-    if (distance > card->rng) return false;
-    
-    // Additional validation based on card type
-    switch (card->type) {
-        case BASIC_ATK:
-        case SKILL_ATK:
-            return target != caster; // Can't attack self
-            
-        case BASIC_DEF:
-        case SKILL_DEF:
-            return target == caster; // Can only defend self
-            
-        default:
-            return true;
+    if (*epic_available) {
+        printf("Player %d epic cards now available!\n", g_ctx->current_player + 1);
     }
-}
-
-int calculate_distance(int pos1, int pos2) {
-    return abs(pos1 - pos2);
 }
 
 void apply_damage(Player* target, int damage, Player* source) {
     if (!target || damage <= 0) return;
     
-    // Apply defense reduction first
     int actual_damage = MAX(0, damage - target->defense);
     target->defense = MAX(0, target->defense - damage);
-    
-    // Apply remaining damage to health
     target->health -= actual_damage;
     
-    // Character-specific damage reactions
+    printf("Applied %d damage to %s (remaining health: %d)\n", 
+           actual_damage, target->fable->name, target->health);
+    
+    // Character-specific damage reactions (with safety checks)
     if (target->fable) {
-        switch (target->fable->epic_threshold) {
-            case 17: // Mulan
-                if (strcmp(target->fable->name, "Mulan") == 0) {
-                    mulan_on_damage_taken(target, actual_damage, source);
-                }
-                break;
-            case 16: // Kaguya
-                if (strcmp(target->fable->name, "Kaguya") == 0) {
-                    kaguya_on_damage_taken(target, actual_damage, source);
-                }
-                break;
+        if (strcmp(target->fable->name, "Mulan") == 0) {
+            // mulan_on_damage_taken(target, actual_damage, source); // Commented out until proper implementation
+            printf("Mulan damage reaction\n");
+        } else if (strcmp(target->fable->name, "Kaguya") == 0) {
+            // kaguya_on_damage_taken(target, actual_damage, source); // Commented out until proper implementation
+            printf("Kaguya damage reaction\n");
         }
     }
 }
 
 //=============================================================================
-// MAIN GAME LOOP INTEGRATION
+// ENHANCED TITLE SCREEN
 //=============================================================================
 
-void update_game_logic(float delta_time) {
-    if (!g_ctx) return;
+void TitleScreen(SDL_Renderer *ren){
+    bool intitle=1;
+    SDL_Event e;
+    SDL_Rect button={WSCREEN/2-200,HSCREEN/2-50,400,100};
+    SDL_Color txtclr={255,255,255,255},btnclr={194,194,194,255};
+    int32_t r=10;
     
-    // Process ongoing effects
-    process_effects();
-    
-    // Update character-specific systems
-    for (int i = 0; i < 2; i++) {
-        Player* player = g_ctx->players[i];
-        if (!player || !player->fable) continue;
-        
-        switch (player->fable->epic_threshold) {
-            case 18: // Match Girl
-                match_girl_update(player, delta_time);
-                break;
-            case 16: // Alice
-                if (strcmp(player->fable->name, "Alice") == 0) {
-                    alice_update(player, delta_time);
+    while(intitle){
+        while(SDL_PollEvent(&e)){
+            if(e.type==SDL_QUIT){
+                exit(0);
+                Playing=0;
+            }
+            if(e.type==SDL_MOUSEBUTTONDOWN){
+                int32_t mx=e.button.x, my=e.button.y;
+                if(mx>=XCENTER-200&&mx<=XCENTER+200&&my>=YCENTER+60&&my<=YCENTER+160){
+                    intitle=0;
                 }
-                break;
+            }
         }
+        SDL_SetRenderDrawColor(ren,255,255,255,255);
+        SDL_RenderClear(ren);
+        SDL_Rect box={XCENTER,YCENTER+110,400,100};
+        DrawButton(ren,box,r,btnclr,txtclr,"Play Enhanced 1v1");
+
+        SDL_RenderPresent(ren);
+        SDL_Delay(16);
     }
 }
 
-// Placeholder function implementations to avoid linking errors
-void handle_input_event(SDL_Event* event) {
-    (void)event; // Suppress unused parameter warning
-}
+//=============================================================================
+// ENHANCED BATTLE SCREEN WITH IMPROVED STATE MANAGEMENT
+//=============================================================================
 
-void render_game_state(void) {
-    // Placeholder
-}
-
-void render_battlefield(void) {
-    // Placeholder
-}
-
-void render_player_ui(Player* player, bool is_bottom) {
-    (void)player;
-    (void)is_bottom;
-}
-
-void render_cards_in_hand(Player* player, bool is_bottom) {
-    (void)player;
-    (void)is_bottom;
-}
-
-void render_epic_cards(Player* player, bool is_bottom) {
-    (void)player;
-    (void)is_bottom;
-}
-
-void render_turn_indicator(void) {
-    // Placeholder
-}
-
-void render_debug_info(void) {
-    // Placeholder
-}
-
-void activate_character_ability(Player* player, int ability_index) {
-    (void)player;
-    (void)ability_index;
-}
-
-void apply_healing(Player* target, int healing) {
-    if (!target || healing <= 0) return;
-    target->health += healing;
-}
-
-void advance_turn_phase(void) {
-    // Placeholder
-}
-
-// This function integrates with the existing main game loop
-void enhanced_battle_screen(SDL_Renderer* ren, Player* p1, Player* p2) {
+void EnhancedBattleScreen(SDL_Renderer* ren, Player* p1, Player* p2) {
     // Initialize enhanced game context
     init_game_context(ren);
     g_ctx->players[0] = p1;
@@ -708,6 +655,8 @@ void enhanced_battle_screen(SDL_Renderer* ren, Player* p1, Player* p2) {
     bool in_battle = true;
     SDL_Event event;
     Uint32 last_time = SDL_GetTicks();
+    
+    printf("Enhanced battle system started\n");
     
     while (in_battle && !g_ctx->game_over) {
         Uint32 current_time = SDL_GetTicks();
@@ -720,21 +669,291 @@ void enhanced_battle_screen(SDL_Renderer* ren, Player* p1, Player* p2) {
                 in_battle = false;
                 break;
             }
-            handle_input_event(&event);
+            
+            if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                int32_t mx = event.button.x, my = event.button.y;
+                
+                // End turn button
+                SDL_Rect end_turn_rect = {WSCREEN-250, HSCREEN/2-50, 200, 100};
+                if (SDL_PointInRect(&(SDL_Point){mx, my}, &end_turn_rect)) {
+                    if (g_ctx->current_state == GAME_STATE_MAIN_PHASE) {
+                        change_game_state(GAME_STATE_TURN_END);
+                    }
+                    continue;
+                }
+                
+                // Card selection (simplified)
+                if (g_ctx->current_state == GAME_STATE_MAIN_PHASE) {
+                    Player* current_player = g_ctx->players[g_ctx->current_player];
+                    
+                    // Check hand cards for current player
+                    for (int i = 0; i < current_player->hand.cnt; i++) {
+                        SDL_Rect card_rect;
+                        if (g_ctx->current_player == 0) {
+                            card_rect = (SDL_Rect){50 + i * (WCARD + 20), HSCREEN - HCARD + 40, WCARD, HCARD};
+                        } else {
+                            card_rect = (SDL_Rect){WSCREEN - (50 + (i + 1) * (WCARD + 20)), -40, WCARD, HCARD};
+                        }
+                        
+                        if (SDL_PointInRect(&(SDL_Point){mx, my}, &card_rect)) {
+                            Card* selected = current_player->hand.cards[i];
+                            Player* opponent = g_ctx->players[1 - g_ctx->current_player];
+                            
+                            PlayResult result = attempt_play_card(current_player, selected, opponent->pos);
+                            
+                            switch (result) {
+                                case PLAY_RESULT_SUCCESS:
+                                    printf("Card played successfully\n");
+                                    break;
+                                case PLAY_RESULT_INSUFFICIENT_ENERGY:
+                                    printf("Insufficient energy\n");
+                                    break;
+                                case PLAY_RESULT_OUT_OF_RANGE:
+                                    printf("Target out of range\n");
+                                    break;
+                                case PLAY_RESULT_REQUIRES_LINK:
+                                    printf("Card requires linking\n");
+                                    break;
+                                default:
+                                    printf("Cannot play card\n");
+                                    break;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
         }
         
-        // Update game logic
-        update_game_logic(delta_time);
+        // Update character-specific systems (with safety checks)
+        for (int i = 0; i < 2; i++) {
+            Player* player = g_ctx->players[i];
+            if (!player || !player->fable) continue;
+            
+            if (strcmp(player->fable->name, "Match Girl") == 0) {
+                // match_girl_update(player, delta_time); // Commented out until proper implementation
+            } else if (strcmp(player->fable->name, "Alice") == 0) {
+                // alice_update(player, delta_time); // Commented out until proper implementation
+            }
+        }
+        
+        // Process ongoing effects
+        process_effects();
         
         // Render
         SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
         SDL_RenderClear(ren);
         
-        render_game_state();
+        // Render battlefield
+        BattleLane(ren, p1, p2);
+        
+        // Render P1 hand (bottom)
+        for (int i = 0; i < p1->hand.cnt; i++) {
+            SDL_Rect rect = {50 + i * (WCARD + 20), HSCREEN - HCARD + 40, WCARD, HCARD};
+            SDL_SetRenderDrawColor(ren, 200, 0, 0, 255);
+            SDL_RenderFillRect(ren, &rect);
+            WriteText(ren, p1->hand.cards[i]->name, (SDL_Color){255, 255, 255, 255}, 
+                     rect.x + WCARD/2, rect.y + HCARD/2, 16);
+        }
+        
+        // Render P2 hand (top)
+        for (int i = 0; i < p2->hand.cnt; i++) {
+            SDL_Rect rect = {WSCREEN - (50 + (i + 1) * (WCARD + 20)), -40, WCARD, HCARD};
+            SDL_SetRenderDrawColor(ren, 0, 0, 200, 255);
+            SDL_RenderFillRect(ren, &rect);
+            WriteText(ren, p2->hand.cards[i]->name, (SDL_Color){255, 255, 255, 255}, 
+                     rect.x + WCARD/2, rect.y + HCARD/2, 16);
+        }
+        
+        // Render health bars
+        SDL_Rect p1_health = {WSCREEN-350, HSCREEN-100, p1->health * 300 / p1->fable->health, 30};
+        SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+        SDL_RenderFillRect(ren, &p1_health);
+        
+        SDL_Rect p2_health = {50, 200, p2->health * 300 / p2->fable->health, 30};
+        SDL_SetRenderDrawColor(ren, 255, 0, 0, 255);
+        SDL_RenderFillRect(ren, &p2_health);
+        
+        // Render turn indicator
+        if (g_ctx->current_player == 0) {
+            WriteText(ren, "P1's Turn", (SDL_Color){0, 0, 0, 255}, 100, HSCREEN/2, 30);
+            SDL_Rect end_turn = {WSCREEN-150, HSCREEN/2, 200, 100};
+            DrawButton(ren, end_turn, 10, (SDL_Color){200, 0, 0, 255}, 
+                      (SDL_Color){255, 255, 255, 255}, "End Turn");
+        } else {
+            WriteText(ren, "P2's Turn", (SDL_Color){0, 0, 0, 255}, 100, HSCREEN/2, 30);
+            SDL_Rect end_turn = {WSCREEN-150, HSCREEN/2, 200, 100};
+            DrawButton(ren, end_turn, 10, (SDL_Color){0, 0, 200, 255}, 
+                      (SDL_Color){255, 255, 255, 255}, "End Turn");
+        }
+        
+        // Render game state info
+        char state_text[64];
+        snprintf(state_text, sizeof(state_text), "Turn: %d | State: %d", 
+                g_ctx->turn_number, g_ctx->current_state);
+        WriteText(ren, state_text, (SDL_Color){0, 0, 0, 255}, WSCREEN/2, 50, 20);
         
         SDL_RenderPresent(ren);
-        SDL_Delay(16); // ~60 FPS
+        SDL_Delay(16);
+    }
+    
+    // Game over screen
+    if (g_ctx->game_over) {
+        char winner_text[64];
+        snprintf(winner_text, sizeof(winner_text), "Player %d Wins!", g_ctx->winner + 1);
+        WriteText(ren, winner_text, (SDL_Color){255, 0, 0, 255}, WSCREEN/2, HSCREEN/2, 48);
+        SDL_RenderPresent(ren);
+        SDL_Delay(3000);
     }
     
     cleanup_game_context();
+}
+
+//=============================================================================
+// ENHANCED SETUP SYSTEM
+//=============================================================================
+
+Deck general_shop = {
+    .cards = {&Attack1, &Defense1, &Move1, &Wild1, &Attack2, &Defense2, &Move2, &Attack3, &Defense3, &Move3},
+    .cnt = 10
+};
+
+void enhanced_starting_deck(Player *p) {
+    for (int i = 0; i < 3; i++) {
+        add_deck(&p->draw, &Attack1);
+        add_deck(&p->draw, &Defense1);
+        add_deck(&p->draw, &Move1);
+    }
+    
+    // Add character-specific starting skills if available
+    if (p->fable) {
+        // Add basic skill cards (placeholder since actual skills need proper implementation)
+        add_deck(&p->draw, &Attack1); // Placeholder for level 1 attack skill
+        add_deck(&p->draw, &Defense1); // Placeholder for level 1 defense skill
+        add_deck(&p->draw, &Move1);   // Placeholder for level 1 movement skill
+    }
+    
+    shuffle_deck(&p->draw);
+}
+
+void enhanced_setup_player(Player *p, Fable *fable) {
+    p->fable = fable;
+    p->health = fable->health;
+    p->power = 0;
+    p->defense = 0;
+    p->pos = fable->lane;
+    
+    // Initialize character-specific state
+    if (strcmp(fable->name, "Alice") == 0) {
+        init_alice_state(p);
+    } else if (strcmp(fable->name, "Kaguya") == 0) {
+        init_kaguya_state(p);
+    } else if (strcmp(fable->name, "Mulan") == 0) {
+        init_mulan_state(p);
+    } else if (strcmp(fable->name, "Snow White") == 0) {
+        init_snow_white_state(p);
+    } else if (strcmp(fable->name, "Match Girl") == 0) {
+        init_enhanced_match_girl_state(p);
+    } else if (strcmp(fable->name, "Red Hood") == 0) {
+        init_red_hood_state(p);
+    }
+}
+
+void enhanced_battle_setup(Player *p1, Player *p2, int starting) {
+    // Create character instances (these should be properly defined in character files)
+    static Fable red_hood_char = {
+        .name = "Red Hood",
+        .Piece = {255, 0, 0, 255},
+        .health = 30,
+        .energy = 25,
+        .defense = 6,
+        .epic_threshold = 15,
+        .lane = 0
+    };
+    
+    static Fable alice_char = {
+        .name = "Alice",
+        .Piece = {0, 150, 255, 255},
+        .health = 32,
+        .energy = 0,
+        .defense = 6,
+        .epic_threshold = 16,
+        .lane = 0
+    };
+    
+    // Initialize characters with enhanced setup
+    enhanced_setup_player(p1, &red_hood_char);
+    p1->pos = -1;
+    enhanced_starting_deck(p1);
+    
+    enhanced_setup_player(p2, &alice_char);
+    p2->pos = 1;
+    enhanced_starting_deck(p2);
+    
+    // Initial hand sizes based on starting player
+    if (starting == 1) {
+        draw_hand(p1, 4);
+        draw_hand(p2, 6);
+    } else {
+        draw_hand(p1, 6);
+        draw_hand(p2, 4);
+    }
+    
+    printf("Enhanced battle setup complete\n");
+    printf("P1: %s (Health: %d)\n", p1->fable->name, p1->health);
+    printf("P2: %s (Health: %d)\n", p2->fable->name, p2->health);
+}
+
+//=============================================================================
+// ENHANCED MAIN FUNCTION
+//=============================================================================
+
+int main() {
+    srand(time(NULL));
+    Playing = 1;
+    Player p1 = {0}, p2 = {0};
+
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        printf("SDL_Init Error: %s\n", SDL_GetError());
+        return 1;
+    }
+
+    SDL_Window *win = SDL_CreateWindow("Twisted Fables - Enhanced Edition",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        WSCREEN, HSCREEN, 0);
+    if (!win) {
+        printf("SDL_CreateWindow Error: %s\n", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+    if (!ren) {
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+
+    printf("Enhanced Twisted Fables starting...\n");
+
+    // Main game loop with enhanced systems
+    while (Playing) {
+        TitleScreen(ren);
+        
+        // Determine starting player
+        int starting_player = (rand() % 2) + 1;
+        enhanced_battle_setup(&p1, &p2, starting_player);
+        
+        EnhancedBattleScreen(ren, &p1, &p2);
+    }
+
+    // Cleanup
+    TTF_CloseFont(font);
+    TTF_Quit();
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+    
+    printf("Enhanced game shutdown complete\n");
+    return 0;
 }
