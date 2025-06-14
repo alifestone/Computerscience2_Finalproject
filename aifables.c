@@ -1,449 +1,668 @@
-#include"aifables.h"
-#include<math.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include"cards.h"
+#include "aifables.h"
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "cards.h"
 
-//alice
+extern Fable alice_fable;
+extern Fable mulan;
+extern Fable match_girl_enhanced_fable;
+extern Fable red_hood;
+extern Fable kaguya_fable;
+extern Fable snow_white;
+
+// 引用 alice.c 中的卡牌
+extern Card open_game;
+extern Card twist_game;
+extern Card control_game;
+extern Card magic_trick;
+extern Card mental_magic;
+extern Card hat_trick;
+extern Card strange_agility;
+extern Card strange_stealth;
+extern Card strange_strangeness;
+extern Card off_with_her_head;
+extern Card start_my_show;
+extern Card wonderland_comes;
+extern Card we_are_all_mad;
+extern Card endless_party;
+extern Card wonderful_day;
+extern Card game_control;
+
+
+
+// === Alice 專用購買牌庫（依照購買優先順序）===
+Card *alice_deck[] = {
+    &endless_party,
+    &wonderful_day,
+    &game_control,
+    &off_with_her_head,
+    &start_my_show,
+    &wonderland_comes,
+    &we_are_all_mad,
+    &open_game,
+    &twist_game,
+    &control_game,
+    &magic_trick,
+    &mental_magic,
+    &hat_trick,
+    &strange_agility,
+    &strange_stealth,
+    &strange_strangeness
+};
+int alice_deck_size = sizeof(alice_deck) / sizeof(Card*);
+
+// === 判斷雙方是否在同一條路線，並回傳距離（不同行回傳 99）===
 int lane_distance(Player *self, Player *enemy) {
     if (!self || !enemy) return 99;
     if (self->fable->lane != enemy->fable->lane) return 99;
     return abs(self->fable->lane - enemy->fable->lane);
-
 }
 
-bool alice_try_attack(Player *self, Player *enemy) {
+// === Alice 單張出牌邏輯 ===
+Card* alice_choose_card(Player *self, Player *enemy) {
     for (int i = 0; i < self->hand.cnt; ++i) {
         Card *card = self->hand.cards[i];
-        if ((card->type == BASIC_ATK || card->type == SKILL_ATK) && card->rng >= lane_distance(self, enemy)) {
-            if (card->cst <= self->fable->energy) {
-                printf("[愛麗絲AI] 使用攻擊：%s\n", card->name);
-                card->effect(self, enemy);
-                self->fable->energy -= card->cst;
-                self->hand.cards[i] = NULL;
-                return true;
+        if (!card || card->cst > self->fable->energy) continue;
+
+        // 攻擊牌：距離夠才能打
+        if ((card->type == BASIC_ATK || card->type == SKILL_ATK) &&
+            card->rng >= lane_distance(self, enemy)) {
+            return card;
+        }
+
+        // 防禦牌：當血量偏低時使用
+        if ((card->type == BASIC_DEF || card->type == SKILL_DEF) &&
+            self->fable->health <= 18) {
+            return card;
+        }
+
+        // 移動牌：若雙方距離大於 1 才考慮使用
+        if ((card->type == BASIC_MOV || card->type == SKILL_MOV) &&
+            lane_distance(self, enemy) > 1) {
+            return card;
+        }
+    }
+    return NULL;
+}
+
+// === Alice 購買邏輯：照 deck 中優先順序購買 ===
+bool alice_try_buy(Player *self, FableShop *shop) {
+    for (int i = 0; i < alice_deck_size; ++i) {
+        Card *want = alice_deck[i];
+        Deck *lists[] = { &shop->Attack, &shop->Defense, &shop->Move };
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < lists[j]->cnt; ++k) {
+                Card *card = lists[j]->cards[k];
+                if (card == want && card->cst <= self->fable->energy) {
+                    printf("[愛麗絲AI] 購買卡牌：%s\n", card->name);
+                    add_deck(&self->disc, card);
+                    self->fable->energy -= card->cst;
+                    // 將該牌從商店移除
+                    for (int x = k; x < lists[j]->cnt - 1; ++x)
+                        lists[j]->cards[x] = lists[j]->cards[x + 1];
+                    lists[j]->cnt--;
+                    return true;
+                }
             }
         }
     }
     return false;
 }
 
-bool alice_try_defend(Player *self) {
-    if (self->fable->health > 18) return false;
-    for (int i = 0; i < self->hand.cnt; ++i) {
-        Card *card = self->hand.cards[i];
-        if ((card->type == BASIC_DEF || card->type == SKILL_DEF) && card->cst <= self->fable->energy) {
-            printf("[愛麗絲AI] 使用防禦：%s\n", card->name);
-            card->effect(self, self);
-            self->fable->energy -= card->cst;
-            self->hand.cards[i] = NULL;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool alice_try_move(Player *self, Player *enemy) {
-    int d = lane_distance(self, enemy);
-    if (d <= 1) return false;
-    for (int i = 0; i < self->hand.cnt; ++i) {
-        Card *card = self->hand.cards[i];
-        if ((card->type == BASIC_MOV || card->type == SKILL_MOV) && card->cst <= self->fable->energy) {
-            printf("[愛麗絲AI] 使用移動：%s\n", card->name);
-            card->effect(self, enemy);
-            self->fable->energy -= card->cst;
-            self->hand.cards[i] = NULL;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool alice_try_buy(Player *self, FableShop *shop) {
-    for (int i = 0; i < shop->Attack.cnt; ++i) {
-        Card *card = shop->Attack.cards[i];
-        if (card && card->cst <= self->fable->energy) {
-            printf("[愛麗絲AI] 購買攻擊牌：%s\n", card->name);
-            add_deck(&self->disc, card);
-            self->fable->energy -= card->cst;
-            return true;
-        }
-    }
-    return false;
-}
-
+// === Alice AI 回合主邏輯：只出一張牌或購買 ===
 void ai_alice_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[愛麗絲 AI] 回合開始\n");
-    if (alice_try_attack(self, enemy)) return;
-    if (alice_try_defend(self)) return;
-    if (alice_try_move(self, enemy)) return;
+
+    Card *choice = alice_choose_card(self, enemy);
+    if (choice) {
+        printf("[愛麗絲AI] 出牌：%s\n", choice->name);
+        choice->effect(self, enemy);
+        self->fable->energy -= choice->cst;
+
+        // 從手牌中移除該牌
+        for (int i = 0; i < self->hand.cnt; ++i) {
+            if (self->hand.cards[i] == choice) {
+                self->hand.cards[i] = NULL;
+                break;
+            }
+        }
+        return;
+    }
+
+    // 若沒打牌就購買卡牌
     alice_try_buy(self, shop);
     printf("[愛麗絲AI] 回合結束\n");
 }
-//kaguya
-void ai_kaguya_turn(Player *self, Player *enemy, FableShop *shop) {
-    bool acted = false;
+
+//red hood
+extern Card potshot;
+extern Card crackshot;
+extern Card overdrive_burn;
+extern Card sniper_shot;
+extern Card onboard_cache;
+extern Card unleashed_firepower;
+extern Card transformed_senses;
+extern Card unleashed_fury;
+extern Card energy_shield;
+
+Card *redhood_deck[] = {
+    &potshot,
+    &crackshot,
+    &overdrive_burn,
+    &sniper_shot,
+    &onboard_cache,
+    &unleashed_firepower,
+    &transformed_senses,
+    &unleashed_fury,
+    &energy_shield
+};
+int redhood_deck_size = sizeof(redhood_deck) / sizeof(Card*);
+Card* redhood_choose_card(Player *self, Player *enemy) {
     int dist = abs(self->fable->lane - enemy->fable->lane);
-
-    // 如果我們有至少 3 點防禦，攻擊時會額外加傷害
-    bool has_bonus = (self->fable->defense >= 3);
-
-    // 嘗試使用攻擊牌
-    for (int i = self->hand.cnt - 1; i >= 0; i--) {
-        Card *c = self->hand.cards[i];
-        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
-            self->fable->energy >= c->cst && c->rng >= dist) {
-            printf("[輝夜AI] 使用攻擊牌：%s 對距離 %d 的敵人造成 %d(+%d) 傷害\n", c->name, dist, c->dmg, has_bonus ? 1 : 0);
-            self->fable->energy -= c->cst;
-            c->effect(self, enemy);
-            acted = true;
-            break;
-        }
-    }
-    if (acted) return;
-
-    // 嘗試使用防禦牌（偏好防禦值低時）
-    if (self->fable->defense <= 3 || self->fable->health < 20) {
-        for (int i = self->hand.cnt - 1; i >= 0; i--) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_DEF || c->type == SKILL_DEF) && self->fable->energy >= c->cst) {
-                printf("[輝夜AI] 使用防禦牌：%s 增加防禦 %d\n", c->name, c->defense);
-                self->fable->energy -= c->cst;
-                self->fable->defense += c->defense;
-                acted = true;
-                break;
-            }
-        }
-    }
-    if (acted) return;
-
-    // 嘗試移動靠近敵人（避免站太遠）
-    if (dist > 1) {
-        for (int i = self->hand.cnt - 1; i >= 0; i--) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_MOV || c->type == SKILL_MOV) && self->fable->energy >= c->cst) {
-                printf("[輝夜AI] 移動靠近：%s 前進 %d 格\n", c->name, c->mov);
-                self->fable->energy -= c->cst;
-                if (self->fable->lane < enemy->fable->lane)
-                    self->fable->lane += c->mov;
-                else
-                    self->fable->lane -= c->mov;
-                acted = true;
-                break;
-            }
-        }
-    }
-    if (acted) return;
-
-    // 嘗試購買防禦牌（輝夜走防禦路線）
-    if (shop->Defense.cnt > 0 && shop->Defense.cards[0]->cst <= self->fable->energy) {
-        printf("[輝夜AI] 購買防禦牌：%s\n", shop->Defense.cards[0]->name);
-        self->fable->energy -= shop->Defense.cards[0]->cst;
-        add_deck(&self->disc, shop->Defense.cards[0]);
-        for (int i = 0; i < shop->Defense.cnt - 1; i++)
-            shop->Defense.cards[i] = shop->Defense.cards[i + 1];
-        shop->Defense.cnt--;
-        acted = true;
-    }
-
-    if (!acted) {
-        printf("[輝夜AI] 無動作可執行，結束回合\n");
-    }
-}
-//match girl
-// int lane_distance(Player *self, Player *enemy) {
-//     if (!self || !enemy) return 99;
-//     if (self->fable->lane != enemy->fable->lane) return 99;
-//     return abs(self->position - enemy->position);
-// }
-
-// 嘗試攻擊：如果手上有攻擊牌，且射程夠，就用
-bool mg_try_attack(Player *self, Player *enemy) {
     for (int i = 0; i < self->hand.cnt; ++i) {
         Card *card = self->hand.cards[i];
-        if ((card->type == BASIC_ATK || card->type == SKILL_ATK) && card->rng >= lane_distance(self, enemy)) {
-            if (card->cst <= self->fable->energy) {
-                printf("[火柴AI] 使用攻擊：%s\n", card->name);
-                card->effect(self, enemy);
-                self->fable->energy -= card->cst;
-                self->hand.cards[i] = NULL;
-                return true;
+        if (!card || card->cst > self->fable->energy) continue;
+
+        if ((card->type == BASIC_ATK || card->type == SKILL_ATK || card->type == EPIC) &&
+            card->rng >= dist) {
+            return card;
+        }
+
+        if ((card->type == BASIC_DEF || card->type == SKILL_DEF) &&
+            self->fable->health <= 15) {
+            return card;
+        }
+
+        if ((card->type == BASIC_MOV || card->type == SKILL_MOV) &&
+            dist > 1) {
+            return card;
+        }
+    }
+    return NULL;
+}
+
+
+bool redhood_try_buy(Player *self, FableShop *shop) {
+    for (int i = 0; i < redhood_deck_size; ++i) {
+        Card *want = redhood_deck[i];
+        Deck *lists[] = { &shop->Attack, &shop->Defense, &shop->Move };
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < lists[j]->cnt; ++k) {
+                Card *card = lists[j]->cards[k];
+                if (card == want && card->cst <= self->fable->energy) {
+                    printf("[紅帽AI] 購買卡牌：%s\n", card->name);
+                    add_deck(&self->disc, card);
+                    self->fable->energy -= card->cst;
+                    for (int x = k; x < lists[j]->cnt - 1; ++x)
+                        lists[j]->cards[x] = lists[j]->cards[x + 1];
+                    lists[j]->cnt--;
+                    return true;
+                }
             }
         }
     }
     return false;
 }
 
-// 嘗試防禦：血量低就擋一下
-bool mg_try_defend(Player *self) {
-    if (self->fable->health > 20) return false;
-    for (int i = 0; i < self->hand.cnt; ++i) {
-        Card *card = self->hand.cards[i];
-        if ((card->type == BASIC_DEF || card->type == SKILL_DEF) && card->cst <= self->fable->energy) {
-            printf("[火柴AI] 使用防禦：%s\n", card->name);
-            card->effect(self, self);
-            self->fable->energy -= card->cst;
-            self->hand.cards[i] = NULL;
-            return true;
-        }
-    }
-    return false;
-}
-
-// 嘗試移動接近對手
-bool mg_try_move(Player *self, Player *enemy) {
-    int d = lane_distance(self, enemy);
-    if (d <= 1) return false;
-    for (int i = 0; i < self->hand.cnt; ++i) {
-        Card *card = self->hand.cards[i];
-        if ((card->type == BASIC_MOV || card->type == SKILL_MOV) && card->cst <= self->fable->energy) {
-            printf("[火柴AI] 使用移動：%s\n", card->name);
-            card->effect(self, enemy);
-            self->fable->energy -= card->cst;
-            self->hand.cards[i] = NULL;
-            return true;
-        }
-    }
-    return false;
-}
-
-// 嘗試購買攻擊牌
-bool mg_try_buy(Player *self, FableShop *shop) {
-    for (int i = 0; i < shop->Attack.cnt; ++i) {
-        Card *card = shop->Attack.cards[i];
-        if (card && card->cst <= self->fable->energy) {
-            printf("[火柴AI] 購買攻擊牌：%s\n", card->name);
-            add_deck(&self->disc, card);
-            self->fable->energy -= card->cst;
-            return true;
-        }
-    }
-    return false;
-}
-
-// 火柴女孩專屬 AI 回合控制
-void ai_match_girl_turn(Player *self, Player *enemy, FableShop *shop) {
-    printf("\n[火柴女孩 AI] 回合開始\n");
-    if (mg_try_attack(self, enemy)) return;
-    if (mg_try_defend(self)) return;
-    if (mg_try_move(self, enemy)) return;
-    mg_try_buy(self, shop);
-    printf("[火柴AI] 回合結束\n");
-}
-//mulan
-void ai_mulan_turn(Player *self, Player *enemy, FableShop *shop) {
-    bool acted = false;
-    int dist = abs(self->fable->lane - enemy->fable->lane);
-
-    // 攻擊邏輯：血量健康、有氣時優先攻擊
-    for (int i = self->hand.cnt - 1; i >= 0; i--) {
-        Card *c = self->hand.cards[i];
-        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
-            self->fable->energy >= c->cst && c->rng >= dist) {
-            printf("[花木蘭AI] 使用攻擊牌：%s 對距離 %d 的敵人造成 %d 傷害\n", c->name, dist, c->dmg);
-            c->effect(self, enemy);
-            self->fable->energy -= c->cst;
-            acted = true;
-            break;
-        }
-    }
-    if (acted) return;
-
-    // 防禦邏輯：血量偏低或距離遠時
-    if (self->fable->health <= 15 || dist > 2) {
-        for (int i = self->hand.cnt - 1; i >= 0; i--) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_DEF || c->type == SKILL_DEF) && self->fable->energy >= c->cst) {
-                printf("[花木蘭AI] 使用防禦牌：%s 增加防禦 %d\n", c->name, c->defense);
-                self->fable->energy -= c->cst;
-                self->fable->defense += c->defense;
-                acted = true;
-                break;
-            }
-        }
-    }
-    if (acted) return;
-
-    // 移動靠近敵人
-    if (dist > 1) {
-        for (int i = 0; i < self->hand.cnt; i++) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_MOV || c->type == SKILL_MOV) && self->fable->energy >= c->cst) {
-                printf("[花木蘭AI] 移動靠近敵人：使用 %s 前進 %d 格\n", c->name, c->mov);
-                self->fable->energy -= c->cst;
-                if (self->fable->lane < enemy->fable->lane)
-                    self->fable->lane += c->mov;
-                else
-                    self->fable->lane -= c->mov;
-                acted = true;
-                break;
-            }
-        }
-    }
-    if (acted) return;
-
-    // 購買攻擊牌
-    if (shop->Attack.cnt > 0 && shop->Attack.cards[0]->cst <= self->fable->energy) {
-        printf("[花木蘭AI] 購買攻擊牌：%s\n", shop->Attack.cards[0]->name);
-        self->fable->energy -= shop->Attack.cards[0]->cst;
-        add_deck(&self->disc, shop->Attack.cards[0]);
-        for (int i = 0; i < shop->Attack.cnt - 1; i++)
-            shop->Attack.cards[i] = shop->Attack.cards[i + 1];
-        shop->Attack.cnt--;
-        acted = true;
-    }
-
-    if (!acted) {
-        printf("[花木蘭AI] 無可執行動作，結束回合\n");
-    }
-}
-//redhood
 void ai_redhood_turn(Player *self, Player *enemy, FableShop *shop) {
-    bool acted = false;
-    int dist = abs(self->fable->lane - enemy->fable->lane);
+    printf("\n[紅帽 AI] 回合開始\n");
 
-    // 嘗試使用攻擊牌（從高等級向低搜尋）
-    for (int i = self->hand.cnt - 1; i >= 0; i--) {
-        Card *c = self->hand.cards[i];
-        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
-            self->fable->energy >= c->cst && c->rng >= dist) {
-            printf("[紅帽AI] 使用攻擊牌：%s 對距離 %d 的敵人造成 %d 傷害\n", c->name, dist, c->dmg);
-            c->effect(self, enemy);
-            self->fable->energy -= c->cst;
-            acted = true;
-            break;
-        }
-    }
-
-    if (acted) return;
-
-    // 嘗試防禦：當血量低於 15 或無法攻擊時再考慮
-    if (self->fable->health <= 15 || dist > 2) {
-        for (int i = self->hand.cnt - 1; i >= 0; i--) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_DEF || c->type == SKILL_DEF) &&
-                self->fable->energy >= c->cst) {
-                printf("[紅帽AI] 使用防禦牌：%s 增加防禦 %d\n", c->name, c->defense);
-                self->fable->energy -= c->cst;
-                self->fable->defense += c->defense;
-                acted = true;
+    Card *choice = redhood_choose_card(self, enemy);
+    if (choice) {
+        printf("[紅帽AI] 出牌：%s\n", choice->name);
+        choice->effect(self, enemy);
+        self->fable->energy -= choice->cst;
+        for (int i = 0; i < self->hand.cnt; ++i) {
+            if (self->hand.cards[i] == choice) {
+                self->hand.cards[i] = NULL;
                 break;
             }
         }
+        return;
     }
 
-    if (acted) return;
-
-    // 嘗試移動靠近（若敵人距離大於 1）
-    if (dist > 1) {
-        for (int i = 0; i < self->hand.cnt; i++) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_MOV || c->type == SKILL_MOV) && self->fable->energy >= c->cst) {
-                printf("[紅帽AI] 移動靠近敵人：使用 %s 前進 %d 格\n", c->name, c->mov);
-                self->fable->energy -= c->cst;
-                if (self->fable->lane < enemy->fable->lane)
-                    self->fable->lane += c->mov;
-                else
-                    self->fable->lane -= c->mov;
-                acted = true;
-                break;
-            }
-        }
-    }
-
-    if (acted) return;
-
-    // 嘗試購買攻擊牌
-    if (shop->Attack.cnt > 0 && shop->Attack.cards[0]->cst <= self->fable->energy) {
-        printf("[紅帽AI] 購買攻擊牌：%s\n", shop->Attack.cards[0]->name);
-        self->fable->energy -= shop->Attack.cards[0]->cst;
-        add_deck(&self->disc, shop->Attack.cards[0]);
-        // 將牌庫頂卡片移除
-        for (int i = 0; i < shop->Attack.cnt - 1; i++)
-            shop->Attack.cards[i] = shop->Attack.cards[i + 1];
-        shop->Attack.cnt--;
-        acted = true;
-    }
-
-    if (!acted) {
-        printf("[紅帽AI] 沒有可執行動作，結束回合\n");
-    }
+    redhood_try_buy(self, shop);
+    printf("[紅帽AI] 回合結束\n");
 }
-//snow
-void ai_snowwhite_turn(Player *self, Player *enemy, FableShop *shop) {
-    bool acted = false;
-    int dist = abs(self->fable->lane - enemy->fable->lane);
 
-    // 若對方棄牌堆中毒牌較多，偏好使用攻擊（白雪特色）
+//mulan
+extern Card burongxiaoqu;        // 不容小覷 (等級一)
+extern Card shibukedang;         // 勢不可擋 (等級二)
+extern Card jianbukecu;          // 堅不可摧 (等級三)
+extern Card qiguanquanshen;      // 氣慣全身 (蛻變1)
+extern Card baofengqianxi_atk;   // 暴風前夕 (蛻變2) - 攻擊版
+extern Card yijingzhidong;       // 以靜制動 (等級一)
+extern Card yiroukegang;         // 以柔克剛 (等級二)
+extern Card yiruoshengqiang;     // 以弱勝強 (等級三)
+extern Card zhuzaimingyun;       // 主宰命運 (蛻變1)
+extern Card baofengqianxi_def;   // 暴風前夕 (蛻變2) - 防禦版
+extern Card yongbutuisuo;        // 永不退縮 (等級一)
+extern Card haobuliuqing;        // 毫不留情 (等級二)
+extern Card jueburao恕;          // 絕不饒恕 (等級三)
+extern Card changquzhiru;        // 長驅直入 (蛻變1)
+extern Card baofengqianxi_mov;   // 暴風前夕 (蛻變2) - 移動版
+extern Card qichongyunxiao;      // 氣沖雲霄
+extern Card zhimianhuandun;      // 直面混沌
+extern Card leitingyiji;         // 雷霆一擊
+
+Card *mulan_deck[] = {
+    &burongxiaoqu,        // 不容小覷 (等級一)
+    &shibukedang,         // 勢不可擋 (等級二)
+    &jianbukecu,          // 堅不可摧 (等級三)
+    &qiguanquanshen,      // 氣慣全身 (蛻變1)
+    &baofengqianxi_atk,   // 暴風前夕 (蛻變2) - 攻擊版
+    &yijingzhidong,       // 以靜制動 (等級一)
+    &yiroukegang,         // 以柔克剛 (等級二)
+    &yiruoshengqiang,     // 以弱勝強 (等級三)
+    &zhuzaimingyun,       // 主宰命運 (蛻變1)
+    &baofengqianxi_def,   // 暴風前夕 (蛻變2) - 防禦版
+    &yongbutuisuo,        // 永不退縮 (等級一)
+    &haobuliuqing,        // 毫不留情 (等級二)
+    &jueburao恕,          // 絕不饒恕 (等級三)
+    &changquzhiru,        // 長驅直入 (蛻變1)
+    &baofengqianxi_mov,   // 暴風前夕 (蛻變2) - 移動版
+    &qichongyunxiao,      // 氣沖雲霄
+    &zhimianhuandun,      // 直面混沌
+    &leitingyiji      
+};
+int mulan_deck_size = sizeof(mulan_deck) / sizeof(Card*);
+
+Card* mulan_choose_card(Player *self, Player *enemy) {
+    int dist = abs(self->fable->lane - enemy->fable->lane);
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *c = self->hand.cards[i];
+        if (!c || c->cst > self->fable->energy) continue;
+
+        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
+            c->rng >= dist) {
+            return c;
+        }
+
+        if ((c->type == BASIC_DEF || c->type == SKILL_DEF) &&
+            (self->fable->health <= 15 || dist > 2)) {
+            return c;
+        }
+
+        if ((c->type == BASIC_MOV || c->type == SKILL_MOV) &&
+            dist > 1) {
+            return c;
+        }
+    }
+    return NULL;
+}
+
+bool mulan_try_buy(Player *self, FableShop *shop) {
+    for (int i = 0; i < mulan_deck_size; ++i) {
+        Card *want = mulan_deck[i];
+        Deck *lists[] = { &shop->Attack, &shop->Defense, &shop->Move };
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < lists[j]->cnt; ++k) {
+                Card *card = lists[j]->cards[k];
+                if (card == want && card->cst <= self->fable->energy) {
+                    printf("[花木蘭AI] 購買卡牌：%s\n", card->name);
+                    add_deck(&self->disc, card);
+                    self->fable->energy -= card->cst;
+                    for (int x = k; x < lists[j]->cnt - 1; ++x)
+                        lists[j]->cards[x] = lists[j]->cards[x + 1];
+                    lists[j]->cnt--;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+void ai_mulan_turn(Player *self, Player *enemy, FableShop *shop) {
+    printf("\n[花木蘭 AI] 回合開始\n");
+
+    Card *choice = mulan_choose_card(self, enemy);
+    if (choice) {
+        printf("[花木蘭AI] 出牌：%s\n", choice->name);
+        choice->effect(self, enemy);
+        self->fable->energy -= choice->cst;
+        for (int i = 0; i < self->hand.cnt; ++i) {
+            if (self->hand.cards[i] == choice) {
+                self->hand.cards[i] = NULL;
+                break;
+            }
+        }
+        return;
+    }
+
+    mulan_try_buy(self, shop);
+    printf("[花木蘭AI] 回合結束\n");
+}
+
+//snow
+extern Card poison1;        // 1級中毒牌
+extern Card poison2;        // 2級中毒牌  
+extern Card poison3;        // 3級中毒牌
+extern Deck poison_deck;
+extern Card crystal_fragment;
+extern Card crystal_vortex;
+extern Card crystal_storm;
+extern Card crystal_coffin;
+extern Card pure_poison;
+extern Card tainted_blessing;
+extern Card tainted_feast;
+extern Card tainted_carnival;
+extern Card fallen_calamity;
+extern Card broken_fantasy;
+extern Card broken_reality;
+extern Card broken_destiny;
+extern Card toxic_erosion;
+extern Card seven_serpent_rage;
+extern Card mirror_rain;
+extern Card brewing_disaster;
+
+Card *snow_deck[] = {
+    &poison1,        // 1級中毒牌
+    &poison2,        // 2級中毒牌  
+    &poison3,        // 3級中毒牌
+    &crystal_fragment,
+    &crystal_vortex,
+    &crystal_storm,
+    &crystal_coffin,
+    &pure_poison,
+    &tainted_blessing,
+    &tainted_feast,
+    &tainted_carnival,
+    &fallen_calamity,
+    &broken_fantasy,
+    &broken_reality,
+    &broken_destiny,
+    &toxic_erosion,
+    &seven_serpent_rage,
+    &mirror_rain,
+    &brewing_disaster
+};
+int snow_deck_size = sizeof(snow_deck) / sizeof(Card*);
+
+Card* snow_choose_card(Player *self, Player *enemy) {
+    int dist = abs(self->fable->lane - enemy->fable->lane);
     int poison_count = 0;
     for (int i = 0; i < enemy->disc.cnt; i++) {
-        if (strstr(enemy->disc.cards[i]->name, "中毒")) {
+        if (enemy->disc.cards[i] && strstr(enemy->disc.cards[i]->name, "毒")) {
             poison_count++;
         }
     }
 
-    // 嘗試使用攻擊牌
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *c = self->hand.cards[i];
+        if (!c || c->cst > self->fable->energy) continue;
+
+        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
+            c->rng >= dist) {
+            return c;
+        }
+
+        if ((c->type == BASIC_DEF || c->type == SKILL_DEF) &&
+            (self->fable->health <= 18 || poison_count >= 2)) {
+            return c;
+        }
+
+        if ((c->type == BASIC_MOV || c->type == SKILL_MOV) && dist > 1) {
+            return c;
+        }
+    }
+    return NULL;
+}
+
+bool snow_try_buy(Player *self, FableShop *shop) {
+    for (int i = 0; i < snow_deck_size; ++i) {
+        Card *want = snow_deck[i];
+        Deck *lists[] = { &shop->Attack, &shop->Defense, &shop->Move };
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < lists[j]->cnt; ++k) {
+                Card *card = lists[j]->cards[k];
+                if (card == want && card->cst <= self->fable->energy) {
+                    printf("[白雪AI] 購買卡牌：%s\n", card->name);
+                    add_deck(&self->disc, card);
+                    self->fable->energy -= card->cst;
+                    for (int x = k; x < lists[j]->cnt - 1; ++x)
+                        lists[j]->cards[x] = lists[j]->cards[x + 1];
+                    lists[j]->cnt--;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void ai_snowwhite_turn(Player *self, Player *enemy, FableShop *shop) {
+    printf("\n[白雪 AI] 回合開始\n");
+
+    Card *choice = snow_choose_card(self, enemy);
+    if (choice) {
+        printf("[白雪AI] 出牌：%s\n", choice->name);
+        choice->effect(self, enemy);
+        self->fable->energy -= choice->cst;
+        for (int i = 0; i < self->hand.cnt; ++i) {
+            if (self->hand.cards[i] == choice) {
+                self->hand.cards[i] = NULL;
+                break;
+            }
+        }
+        return;
+    }
+
+    snow_try_buy(self, shop);
+    printf("[白雪AI] 回合結束\n");
+}
+
+//kaguya
+extern Card enlightened_glow;       // 領悟的光芒
+extern Card enlightened_glory;      // 領悟的榮耀  
+extern Card enlightened_avatar;     // 領悟的化身
+extern Card disciplinary_moment;    // 懲戒時刻 (蛻變1
+extern Card confused_echo;          // 困惑的回聲
+extern Card distant_echo;           // 久遠的回響
+extern Card divine_summon;          // 神性的召換
+extern Card blood_moonlight;        // 血色月光 (蛻變1)
+extern Card focused_introspection;  // 專注的自省
+extern Card enlightened_resolve;    // 頓悟的決心
+extern Card painful_purification;   // 痛徹的淨化
+extern Card spiritual_instinct;     // 靈性本能 (蛻變1)
+extern Card moonlight_meditation;   // 月下沉思 (蛻變2)
+extern Card blazing_bamboo_sword;   // 炙熱的竹刀
+extern Card destined_judgment;      // 注定的審判
+extern Card restless_bloodlust;     // 躁動的血性
+
+Card *kaguya_deck[] = {
+    &enlightened_glow,      // 領悟的光芒
+    &enlightened_glory,      // 領悟的榮耀  
+    &enlightened_avatar,     // 領悟的化身
+    &disciplinary_moment,    // 懲戒時刻 (蛻變1
+    &confused_echo,          // 困惑的回聲
+    &distant_echo,           // 久遠的回響
+    &divine_summon,          // 神性的召換
+    &blood_moonlight,        // 血色月光 (蛻變1)
+    &focused_introspection,  // 專注的自省
+    &enlightened_resolve,    // 頓悟的決心
+    &painful_purification,   // 痛徹的淨化
+    &spiritual_instinct,     // 靈性本能 (蛻變1)
+    &moonlight_meditation,   // 月下沉思 (蛻變2)
+    &blazing_bamboo_sword,   // 炙熱的竹刀
+    &destined_judgment,      // 注定的審判
+    &restless_bloodlust
+};
+int kaguya_deck_size = sizeof(kaguya_deck) / sizeof(Card*);
+
+Card* kaguya_choose_card(Player *self, Player *enemy) {
+    int dist = abs(self->fable->lane - enemy->fable->lane);
+    bool has_bonus = (self->fable->defense >= 3);
+
     for (int i = self->hand.cnt - 1; i >= 0; i--) {
         Card *c = self->hand.cards[i];
+        if (!c || c->cst > self->fable->energy) continue;
+
         if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
-            self->fable->energy >= c->cst && c->rng >= dist) {
-            printf("[白雪AI] 使用攻擊牌：%s (毒牌 %d 張)\n", c->name, poison_count);
-            c->effect(self, enemy);
-            self->fable->energy -= c->cst;
-            acted = true;
-            break;
+            c->rng >= dist) {
+            return c;
+        }
+
+        if ((c->type == BASIC_DEF || c->type == SKILL_DEF) &&
+            (self->fable->defense <= 3 || self->fable->health < 20)) {
+            return c;
+        }
+
+        if ((c->type == BASIC_MOV || c->type == SKILL_MOV) &&
+            dist > 1) {
+            return c;
         }
     }
+    return NULL;
+}
 
-    if (acted) return;
-
-    // 嘗試使用防禦牌：血量偏低或有中毒增益時
-    if (self->fable->health <= 18 || poison_count >= 2) {
-        for (int i = self->hand.cnt - 1; i >= 0; i--) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_DEF || c->type == SKILL_DEF) && self->fable->energy >= c->cst) {
-                printf("[白雪AI] 使用防禦牌：%s\n", c->name);
-                self->fable->defense += c->defense;
-                self->fable->energy -= c->cst;
-                acted = true;
-                break;
+bool kaguya_try_buy(Player *self, FableShop *shop) {
+    for (int i = 0; i < kaguya_deck_size; ++i) {
+        Card *want = kaguya_deck[i];
+        Deck *lists[] = { &shop->Attack, &shop->Defense, &shop->Move };
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < lists[j]->cnt; ++k) {
+                Card *card = lists[j]->cards[k];
+                if (card == want && card->cst <= self->fable->energy) {
+                    printf("[輝夜AI] 購買卡牌：%s\n", card->name);
+                    add_deck(&self->disc, card);
+                    self->fable->energy -= card->cst;
+                    for (int x = k; x < lists[j]->cnt - 1; ++x)
+                        lists[j]->cards[x] = lists[j]->cards[x + 1];
+                    lists[j]->cnt--;
+                    return true;
+                }
             }
         }
     }
+    return false;
+}
 
-    if (acted) return;
+void ai_kaguya_turn(Player *self, Player *enemy, FableShop *shop) {
+    printf("\n[輝夜 AI] 回合開始\n");
 
-    // 嘗試移動接近目標（白雪射程短）
-    if (dist > 1) {
-        for (int i = 0; i < self->hand.cnt; i++) {
-            Card *c = self->hand.cards[i];
-            if ((c->type == BASIC_MOV || c->type == SKILL_MOV) && self->fable->energy >= c->cst) {
-                printf("[白雪AI] 使用移動牌靠近敵人：%s\n", c->name);
-                if (self->fable->lane < enemy->fable->lane)
-                    self->fable->lane += c->mov;
-                else
-                    self->fable->lane -= c->mov;
-                self->fable->energy -= c->cst;
-                acted = true;
+    Card *choice = kaguya_choose_card(self, enemy);
+    if (choice) {
+        printf("[輝夜AI] 出牌：%s\n", choice->name);
+        choice->effect(self, enemy);
+        self->fable->energy -= choice->cst;
+        for (int i = 0; i < self->hand.cnt; ++i) {
+            if (self->hand.cards[i] == choice) {
+                self->hand.cards[i] = NULL;
                 break;
             }
         }
+        return;
     }
 
-    if (acted) return;
+    kaguya_try_buy(self, shop);
+    printf("[輝夜AI] 回合結束\n");
+}
+// Match Girl
+extern Card phantom_wish_enhanced;    // Phantom Wish
+extern Card secret_desire_enhanced;   // Secret Desire
+extern Card endless_luxury_enhanced;  // Endless Luxury
+extern Card devil_sacrifice_enhanced; // Devil's Sacrifice
+extern Card devil_bet_enhanced;       // Devil's Bet
+extern Card devil_contract_enhanced;  // Devil's Contract
+extern Card weightless_soul_enhanced; // Weightless Soul
+extern Card indebted_soul_enhanced;   // Indebted Soul
+extern Card broken_soul_enhanced;     // Broken Soul
+extern Card ritual_of_pain;           // Ritual of Pain
+extern Card flame_trick;              // Flame Trick
+extern Card torment_of_fate;          // Torment of Fate
+extern Card indulgent_desire;         // Indulgent Desire
+extern Card devil_gaze;               // Devil Gaze
+extern Card desire_trick;             // Desire Trick
+extern Card hell_flame_enhanced;      // Hell Flame
+extern Card doomfall_enhanced;        // Doomfall
+extern Card curse_of_greed_enhanced;  // Curse of Greed
 
-    // 優先購買攻擊牌
-    if (shop->Attack.cnt > 0 && shop->Attack.cards[0]->cst <= self->fable->energy) {
-        printf("[白雪AI] 購買攻擊牌：%s\n", shop->Attack.cards[0]->name);
-        self->fable->energy -= shop->Attack.cards[0]->cst;
-        add_deck(&self->disc, shop->Attack.cards[0]);
-        for (int i = 0; i < shop->Attack.cnt - 1; i++)
-            shop->Attack.cards[i] = shop->Attack.cards[i + 1];
-        shop->Attack.cnt--;
-        acted = true;
+Card *mg_deck[] = {
+    &phantom_wish_enhanced,    // Phantom Wish
+    &secret_desire_enhanced,   // Secret Desire
+    &endless_luxury_enhanced,  // Endless Luxury
+    &devil_sacrifice_enhanced, // Devil's Sacrifice
+    &devil_bet_enhanced,       // Devil's Bet
+    &devil_contract_enhanced,  // Devil's Contract
+    &weightless_soul_enhanced, // Weightless Soul
+    &indebted_soul_enhanced,   // Indebted Soul
+    &broken_soul_enhanced,     // Broken Soul
+    &ritual_of_pain,           // Ritual of Pain
+    &flame_trick,              // Flame Trick
+    &torment_of_fate,          // Torment of Fate
+    &indulgent_desire,         // Indulgent Desire
+    &devil_gaze,               // Devil Gaze
+    &desire_trick,             // Desire Trick
+    &hell_flame_enhanced,      // Hell Flame
+    &doomfall_enhanced,        // Doomfall
+    &curse_of_greed_enhanced
+};
+int mg_deck_size = sizeof(mg_deck) / sizeof(Card*);
+
+
+Card* mg_choose_card(Player *self, Player *enemy) {
+    int dist = abs(self->fable->lane - enemy->fable->lane);
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *c = self->hand.cards[i];
+        if (!c || c->cst > self->fable->energy) continue;
+
+        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
+            c->rng >= dist) {
+            return c;
+        }
+
+        if ((c->type == BASIC_DEF || c->type == SKILL_DEF) &&
+            self->fable->health <= 20) {
+            return c;
+        }
+
+        if ((c->type == BASIC_MOV || c->type == SKILL_MOV) && dist > 1) {
+            return c;
+        }
+    }
+    return NULL;
+}
+
+bool mg_try_buy(Player *self, FableShop *shop) {
+    for (int i = 0; i < mg_deck_size; ++i) {
+        Card *want = mg_deck[i];
+        Deck *lists[] = { &shop->Attack, &shop->Defense, &shop->Move };
+        for (int j = 0; j < 3; ++j) {
+            for (int k = 0; k < lists[j]->cnt; ++k) {
+                Card *card = lists[j]->cards[k];
+                if (card == want && card->cst <= self->fable->energy) {
+                    printf("[火柴AI] 購買卡牌：%s\n", card->name);
+                    add_deck(&self->disc, card);
+                    self->fable->energy -= card->cst;
+                    for (int x = k; x < lists[j]->cnt - 1; ++x)
+                        lists[j]->cards[x] = lists[j]->cards[x + 1];
+                    lists[j]->cnt--;
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void ai_match_girl_turn(Player *self, Player *enemy, FableShop *shop) {
+    printf("\n[火柴女孩 AI] 回合開始\n");
+
+    Card *choice = mg_choose_card(self, enemy);
+    if (choice) {
+        printf("[火柴AI] 出牌：%s\n", choice->name);
+        choice->effect(self, enemy);
+        self->fable->energy -= choice->cst;
+        for (int i = 0; i < self->hand.cnt; ++i) {
+            if (self->hand.cards[i] == choice) {
+                self->hand.cards[i] = NULL;
+                break;
+            }
+        }
+        return;
     }
 
-    if (!acted) {
-        printf("[白雪AI] 無可執行動作，結束回合\n");
-    }
+    mg_try_buy(self, shop);
+    printf("[火柴AI] 回合結束\n");
 }
