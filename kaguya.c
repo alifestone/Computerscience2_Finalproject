@@ -12,6 +12,8 @@
 // 4. Defensive programming - building systems that protect and enhance
 // 5. Delayed effects - actions that trigger in future turns
 
+KaguyaState* get_kaguya_state(Player* player);
+
 // Kaguya's Defense System - Dynamic defense caps and interactions
 typedef struct DefenseSystem {
     int base_defense_cap;          // Starting defense limit

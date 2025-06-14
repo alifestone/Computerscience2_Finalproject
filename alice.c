@@ -8,18 +8,18 @@
 // This demonstrates how to implement complex character transformations
 // while maintaining clean separation of concerns
 
-typedef enum {
+/*typedef enum {
     IDENTITY_RED_QUEEN,    // +1 attack, -1 movement
     IDENTITY_MAD_HATTER,   // +1 defense, -1 attack  
     IDENTITY_CHESHIRE_CAT, // +1 movement, -1 defense
     IDENTITY_COUNT
-} AliceIdentity;
+} AliceIdentity;*/
 
 // Character-specific state that extends the base Player structure
 typedef struct AliceState {
     AliceIdentity current_identity;
     AliceIdentity previous_identity;
-    int identity_cooldowns[IDENTITY_COUNT];
+    int identity_cooldowns[3];
     bool must_switch_identity; // Rule: must switch each turn
     int cards_gained_this_turn;
     int basic_cards_removed_this_turn;
@@ -35,7 +35,7 @@ typedef struct IdentityModifier {
 } IdentityModifier;
 
 // Static data for each identity - this encapsulates the identity rules
-static const IdentityModifier identity_data[IDENTITY_COUNT] = {
+static const IdentityModifier identity_data[3] = {
     {"Red Queen",    1, 0, -1, {255, 0, 0, 255}},   // Red for aggression
     {"Mad Hatter",   -1, 1, 0, {128, 0, 128, 255}}, // Purple for madness
     {"Cheshire Cat", 0, -1, 1, {255, 192, 203, 255}} // Pink for mischief
@@ -198,7 +198,7 @@ void alice_switch_identity(Player* player, AliceIdentity new_identity) {
     alice_state->must_switch_identity = false;
     
     // Set cooldown for previous identity
-    if (alice_state->previous_identity < IDENTITY_COUNT) {
+    if (alice_state->previous_identity < 3) {
         alice_state->identity_cooldowns[alice_state->previous_identity] = 2; // 2 turn cooldown
     }
     
@@ -235,7 +235,7 @@ void alice_turn_start(Player* player) {
     if (!alice_state) return;
     
     // Decrease cooldowns
-    for (int i = 0; i < IDENTITY_COUNT; i++) {
+    for (int i = 0; i < 3; i++) {
         if (alice_state->identity_cooldowns[i] > 0) {
             alice_state->identity_cooldowns[i]--;
         }
