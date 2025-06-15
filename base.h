@@ -31,6 +31,9 @@
 #ifndef MAX
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
+typedef struct Player Player;
+
+
 
 typedef enum {
     BASIC_ATK,  //基礎攻擊牌
@@ -62,11 +65,12 @@ typedef struct {
     int32_t cnt;
 } Deck;
 
-typedef struct{
+typedef struct FableShop {
     Deck Attack;
     Deck Defense;
     Deck Move;
-}FableShop;
+} FableShop;
+
 
 typedef struct {
     char name[50];
@@ -81,18 +85,24 @@ typedef struct {
     void* character_state; // Generic pointer for character-specific state
 } Fable;
 
-typedef struct {
+struct Player {
     Fable *fable;
     int health;
     int power;
     int defense;
     int pos;
-    Deck draw;          //牌庫（抽牌區）
-    Deck disc;          //棄牌區
-    Deck bani;          //出牌區
-    Deck hand;          //手牌
-    Deck twist;         //反轉牌區
-} Player;
+    Deck draw;
+    Deck disc;
+    Deck bani;
+    Deck hand;
+    Deck twist;
+
+    int lane;
+    int energy;
+
+    void (*ai_func)(Player*, Player*, FableShop*);
+};
+
 
 // Forward declarations for character management functions
 void alice_turn_start(Player* player);
