@@ -317,22 +317,22 @@ void start_turn(int player_id) {
     // Character-specific turn start effects (with safety checks)
     if (player->fable) {
         if (strcmp(player->fable->name, "Red Hood") == 0) {
-            // red_hood_turn_start(player); // Commented out until proper implementation
+            red_hood_turn_start(player); // Commented out until proper implementation
             printf("Red Hood turn start\n");
         } else if (strcmp(player->fable->name, "Alice") == 0) {
-            // alice_turn_start(player); // Commented out until proper implementation
+            alice_turn_start(player); // Commented out until proper implementation
             printf("Alice turn start\n");
         } else if (strcmp(player->fable->name, "Kaguya") == 0) {
-            // kaguya_turn_start(player); // Commented out until proper implementation
+            kaguya_turn_start(player); // Commented out until proper implementation
             printf("Kaguya turn start\n");
         } else if (strcmp(player->fable->name, "Mulan") == 0) {
-            // mulan_turn_start(player); // Commented out until proper implementation
+            mulan_turn_start(player); // Commented out until proper implementation
             printf("Mulan turn start\n");
         } else if (strcmp(player->fable->name, "Snow White") == 0) {
-            // snow_white_turn_start(player); // Commented out until proper implementation
+            snow_white_turn_start(player); // Commented out until proper implementation
             printf("Snow White turn start\n");
         } else if (strcmp(player->fable->name, "Match Girl") == 0) {
-            // match_girl_turn_start(player); // Commented out until proper implementation
+            match_girl_turn_start(player); // Commented out until proper implementation
             printf("Match Girl turn start\n");
         }
     }
