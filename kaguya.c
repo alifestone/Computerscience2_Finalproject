@@ -50,20 +50,20 @@ typedef struct KaguyaState {
 KaguyaState* get_kaguya_state(Player* player);
 
 // Forward declarations for Kaguya's card effects
-void enlightenment_light_effect(void* self, void* target);
-void enlightenment_glory_effect(void* self, void* target);
-void enlightenment_avatar_effect(void* self, void* target);
-void confusing_echo_effect(void* self, void* target);
-void ancient_resonance_effect(void* self, void* target);
-void divine_summon_effect(void* self, void* target);
-void focused_introspection_effect(void* self, void* target);
-void enlightened_resolve_effect(void* self, void* target);
-void painful_purification_effect(void* self, void* target);
+void ascendant_light_effect(void* self, void* target);
+void ascendant_glory_effect(void* self, void* target);
+void ascendant_avatar_effect(void* self, void* target);
+void addled_echoes_effect(void* self, void* target);
+void bygone_echoes_effect(void* self, void* target);
+void divine_echoes_effect(void* self, void* target);
+void focused_intent_effect(void* self, void* target);
+void focused_resolve_effect(void* self, void* target);
+void focused_ascent_effect(void* self, void* target);
 
 // Epic effects
-void scorching_bamboo_effect(void* self, void* target);
-void destined_judgment_effect(void* self, void* target);
-void restless_blood_effect(void* self, void* target);
+void blazing_shinai_effect(void* self, void* target);
+void judgement_arising_effect(void* self, void* target);
+void impulsive_onslaught_effect(void* self, void* target);
 
 //=============================================================================
 // CARD FILTERING ALGORITHMS
@@ -260,61 +260,61 @@ bool check_punishment_mode(Player* kaguya_player, Player* opponent) {
 //=============================================================================
 
 // Attack cards that scale with defense
-Card enlightenment_light = {
-    .name = "Enlightenment Light", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightenment_light_effect
+Card ascendant_light = {
+    .name = "Ascendant Light", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = ascendant_light_effect
 };
 
-Card enlightenment_glory = {
-    .name = "Enlightenment Glory", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightenment_glory_effect
+Card ascendant_glory = {
+    .name = "Ascendant Glory", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = ascendant_glory_effect
 };
 
-Card enlightenment_avatar = {
-    .name = "Enlightenment Avatar", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = enlightenment_avatar_effect
+Card ascendant_avatar = {
+    .name = "Ascendant Avatar", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = ascendant_avatar_effect
 };
 
 // Defense cards with filtering mechanics
-Card confusing_echo = {
-    .name = "Confusing Echo", .type = SKILL_DEF, .val = 1, .cst = 1, .dmg = 0,
-    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = confusing_echo_effect
+Card addled_echoes = {
+    .name = "Addled Echoes", .type = SKILL_DEF, .val = 1, .cst = 1, .dmg = 0,
+    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = addled_echoes_effect
 };
 
-Card ancient_resonance = {
-    .name = "Ancient Resonance", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = ancient_resonance_effect
+Card bygone_echoes = {
+    .name = "Bygone Echoes", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
+    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = bygone_echoes_effect
 };
 
-Card divine_summon = {
-    .name = "Divine Summon", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
-    .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = divine_summon_effect
+Card divine_echoes = {
+    .name = "Divine Echoes", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
+    .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = divine_echoes_effect
 };
 
 // Movement cards with purification mechanics
-Card focused_introspection = {
-    .name = "Focused Introspection", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = focused_introspection_effect
+Card focused_intent = {
+    .name = "Focused Intent", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = focused_intent_effect
 };
 
-Card enlightened_resolve = {
-    .name = "Enlightened Resolve", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = enlightened_resolve_effect
+Card focused_resolve = {
+    .name = "Focused Resolve", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = focused_resolve_effect
 };
 
-Card painful_purification = {
-    .name = "Painful Purification", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = painful_purification_effect
+Card focused_ascent = {
+    .name = "Focused Ascent", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = focused_ascent_effect
 };
 
 // Twist cards that modify defense system
-Card punishment_moment = {
-    .name = "Punishment Moment", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card swift_reprisal = {
+    .name = "Swift Reprisal", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card moonlight_contemplation = {
-    .name = "Moonlight Contemplation", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card uncanny_instinct = {
+    .name = "Uncanny Instinct", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
@@ -323,28 +323,45 @@ Card blood_moon = {
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card master_destiny = {
-    .name = "Master Destiny", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card reflective_repose = {
+    .name = "Reflective Repose", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
 // Epic cards with ultimate effects
-Card scorching_bamboo = {
-    .name = "Scorching Bamboo", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = scorching_bamboo_effect
+Card blazing_shinai = {
+    .name = "Blazing Shinai", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = blazing_shinai_effect
 };
 
-Card destined_judgment = {
-    .name = "Destined Judgment", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 6, .mov = 0, .rng = 0, .link = false, .effect = destined_judgment_effect
+Card judgement_arising = {
+    .name = "Judgement Arising", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 6, .mov = 0, .rng = 0, .link = false, .effect = judgement_arising_effect
 };
 
-Card restless_blood = {
-    .name = "Restless Blood", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = restless_blood_effect
+Card impulsive_onslaught = {
+    .name = "Impulsive Onslaught", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = impulsive_onslaught_effect
 };
 
-Fable kaguya_fable;
+Fable kaguya_fable={
+    "Kaguya",{200,200,255,255},32,0,6,16,
+    .skill={
+        {
+            .cards={&ascendant_light,&ascendant_glory,&swift_reprisal,&ascendant_avatar,&reflective_repose},
+            .cnt=5
+        },
+        {
+            .cards={&addled_echoes,&bygone_echoes,&blood_moon,&divine_echoes,&reflective_repose},
+            .cnt=5
+        },
+        {
+            .cards={&focused_intent,&focused_resolve,&uncanny_instinct,&focused_ascent,&reflective_repose},
+            .cnt=5
+        },
+    },
+    .epic={&blazing_shinai,&judgement_arising,&impulsive_onslaught}
+};
 
 //=============================================================================
 // KAGUYA STATE MANAGEMENT
@@ -456,7 +473,7 @@ void kaguya_on_damage_taken(Player* kaguya_player, int damage, Player* source) {
 // These demonstrate conditional effects and filtering mechanics
 //=============================================================================
 
-void enlightenment_light_effect(void* self, void* target) {
+void ascendant_light_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
@@ -470,13 +487,13 @@ void enlightenment_light_effect(void* self, void* target) {
     opponent->health -= total_damage;
     
     if (bonus_damage > 0) {
-        printf("Enlightenment Light enhanced by high defense! Total damage: %d\n", total_damage);
+        printf("Ascendant Light enhanced by high defense! Total damage: %d\n", total_damage);
     } else {
-        printf("Enlightenment Light deals %d damage\n", total_damage);
+        printf("Ascendant Light deals %d damage\n", total_damage);
     }
 }
 
-void confusing_echo_effect(void* self, void* target) {
+void addled_echoes_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
     
@@ -494,7 +511,7 @@ void confusing_echo_effect(void* self, void* target) {
     printf("Confusing Echo: +%d defense and deck filtering\n", defense_gain);
 }
 
-void ancient_resonance_effect(void* self, void* target) {
+void bygone_echoes_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
     
@@ -510,7 +527,7 @@ void ancient_resonance_effect(void* self, void* target) {
     printf("Ancient Resonance: Enhanced filtering and defense\n");
 }
 
-void divine_summon_effect(void* self, void* target) {
+void divine_echoes_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
     
@@ -526,7 +543,7 @@ void divine_summon_effect(void* self, void* target) {
     printf("Divine Summon: Maximum deck filtering power\n");
 }
 
-void focused_introspection_effect(void* self, void* target) {
+void focused_intent_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
@@ -554,7 +571,7 @@ void focused_introspection_effect(void* self, void* target) {
     printf("Focused Introspection: Damage and purification\n");
 }
 
-void enlightened_resolve_effect(void* self, void* target) {
+void focused_resolve_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
@@ -577,7 +594,7 @@ void enlightened_resolve_effect(void* self, void* target) {
     }
 }
 
-void painful_purification_effect(void* self, void* target) {
+void focused_ascent_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
@@ -598,7 +615,7 @@ void painful_purification_effect(void* self, void* target) {
     printf("Painful Purification: Ultimate range punishment prepared\n");
 }
 
-void scorching_bamboo_effect(void* self, void* target) {
+void blazing_shinai_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
     
@@ -610,7 +627,7 @@ void scorching_bamboo_effect(void* self, void* target) {
     // In full implementation, would set up persistent effect
 }
 
-void destined_judgment_effect(void* self, void* target) {
+void judgement_arising_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
@@ -630,7 +647,7 @@ void destined_judgment_effect(void* self, void* target) {
     }
 }
 
-void restless_blood_effect(void* self, void* target) {
+void impulsive_onslaught_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;
     KaguyaState* kaguya_state = get_kaguya_state(kaguya);
@@ -653,51 +670,13 @@ void restless_blood_effect(void* self, void* target) {
 // Shows how to set up a defense-focused character with filtering capabilities
 //=============================================================================
 
-void init_kaguya_fable(void) {
-    kaguya_fable = (Fable){
-        .name = "Kaguya",
-        .Piece = {200, 200, 255, 255}, // Soft blue for moonlight
-        .health = 32,
-        .energy = 0,
-        .defense = 6, // High base defense cap
-        .epic_threshold = 16,
-        .lane = 0
-    };
-    
-    // Set up skill decks emphasizing defense and filtering
-    kaguya_fable.skill[0] = (Deck){ // Attack skills that scale with defense
-        .cards = {&enlightenment_light, &enlightenment_glory, &enlightenment_glory, 
-                 &enlightenment_avatar, &enlightenment_avatar},
-        .cnt = 5
-    };
-    
-    kaguya_fable.skill[1] = (Deck){ // Defense skills with filtering
-        .cards = {&confusing_echo, &ancient_resonance, &ancient_resonance, 
-                 &divine_summon, &divine_summon},
-        .cnt = 5
-    };
-    
-    kaguya_fable.skill[2] = (Deck){ // Movement skills with purification
-        .cards = {&focused_introspection, &enlightened_resolve, &enlightened_resolve, 
-                 &painful_purification, &painful_purification},
-        .cnt = 5
-    };
-    
-    // Epic cards with ultimate defensive effects
-    kaguya_fable.epic[0] = scorching_bamboo;
-    kaguya_fable.epic[1] = destined_judgment;
-    kaguya_fable.epic[2] = restless_blood;
-}
-
 void setup_kaguya_player(Player* player) {
     if (!player) return;
     
-    init_kaguya_fable();
     player->fable = &kaguya_fable;
     player->health = kaguya_fable.health;
     player->power = 0;
     player->defense = 0;
-    player->pos = kaguya_fable.lane;
     
     // Initialize Kaguya's defensive systems
     init_kaguya_state(player);
@@ -714,9 +693,9 @@ void setup_kaguya_player(Player* player) {
     add_deck(&player->draw, &Defense2);
     
     // Add starting skills
-    add_deck(&player->draw, &enlightenment_light);
-    add_deck(&player->draw, &confusing_echo);
-    add_deck(&player->draw, &focused_introspection);
+    add_deck(&player->draw, &ascendant_light);
+    add_deck(&player->draw, &addled_echoes);
+    add_deck(&player->draw, &focused_intent);
     
     shuffle_deck(&player->draw);
     draw_hand(player, HAND_SIZE);
