@@ -33,25 +33,25 @@ typedef struct SnowWhiteState {
     int poison_cards_placed_this_turn;
     int max_poison_per_turn;
     int poison_damage_multiplier; // From "Pure Poison" twist cards
-    bool corrupted_banquet_active; // Special ability state
-    int mirror_rain_uses_remaining; // Epic card tracking
+    bool corrupted_destiny_active; // Special ability state
+    int rain_of_mirrors_uses_remaining; // Epic card tracking
 } SnowWhiteState;
 
 // Forward declarations for Snow White's card effects
-void crystal_fragment_effect(void* self, void* target);
-void crystal_vortex_effect(void* self, void* target);
-void crystal_storm_effect(void* self, void* target);
-void tainted_blessing_effect(void* self, void* target);
+void shard_storm_effect(void* self, void* target);
+void shard_tempest_effect(void* self, void* target);
+void shard_vortex_effect(void* self, void* target);
+void tainted_offering_effect(void* self, void* target);
 void tainted_feast_effect(void* self, void* target);
-void tainted_revelry_effect(void* self, void* target);
-void broken_fantasy_effect(void* self, void* target);
-void broken_reality_effect(void* self, void* target);
-void broken_destiny_effect(void* self, void* target);
+void tainted_maelstrom_effect(void* self, void* target);
+void shattered_passage_effect(void* self, void* target);
+void shattered_truth_effect(void* self, void* target);
+void shattered_destiny_effect(void* self, void* target);
 
 // Epic effects
-void seven_snakes_wrath_effect(void* self, void* target);
-void mirror_rain_effect(void* self, void* target);
-void brewing_disaster_effect(void* self, void* target);
+void seven_serpents_effect(void* self, void* target);
+void rain_of_mirrors_effect(void* self, void* target);
+void brewing_destruction_effect(void* self, void* target);
 
 //=============================================================================
 // POISON SUPPLY MANAGEMENT SYSTEM
@@ -118,25 +118,25 @@ int count_available_poison(int level) {
 //=============================================================================
 
 // Attack cards that place poison cards in opponent's deck
-Card crystal_fragment = {
-    .name = "Crystal Fragment", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = crystal_fragment_effect
+Card shard_storm = {
+    .name = "Shard Storm", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = shard_storm_effect
 };
 
-Card crystal_vortex = {
-    .name = "Crystal Vortex", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = crystal_vortex_effect
+Card shard_tempest = {
+    .name = "Shard Tempest", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = shard_tempest_effect
 };
 
-Card crystal_storm = {
-    .name = "Crystal Storm", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = crystal_storm_effect
+Card shard_vortex = {
+    .name = "Shard Vortex", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = shard_vortex_effect
 };
 
 // Defense cards that also place poison (unusual design!)
-Card tainted_blessing = {
-    .name = "Tainted Blessing", .type = SKILL_DEF, .val = 1, .cst = 1, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = tainted_blessing_effect
+Card tainted_offering = {
+    .name = "Tainted Offering", .type = SKILL_DEF, .val = 1, .cst = 1, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = tainted_offering_effect
 };
 
 Card tainted_feast = {
@@ -144,25 +144,25 @@ Card tainted_feast = {
     .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = tainted_feast_effect
 };
 
-Card tainted_revelry = {
-    .name = "Tainted Revelry", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = tainted_revelry_effect
+Card tainted_maelstrom = {
+    .name = "Tainted Maelstrom", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = tainted_maelstrom_effect
 };
 
 // Movement cards with positioning elements
-Card broken_fantasy = {
-    .name = "Broken Fantasy", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = broken_fantasy_effect
+Card shattered_passage = {
+    .name = "Shattered Passage", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = shattered_passage_effect
 };
 
-Card broken_reality = {
-    .name = "Broken Reality", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = broken_reality_effect
+Card shattered_truth = {
+    .name = "Shattered Truth", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = shattered_truth_effect
 };
 
-Card broken_destiny = {
-    .name = "Broken Destiny", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 2, .link = false, .effect = broken_destiny_effect
+Card shattered_destiny = {
+    .name = "Shattered Destiny", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 2, .link = false, .effect = shattered_destiny_effect
 };
 
 // Twist cards that enhance poison effects
@@ -171,34 +171,54 @@ Card crystal_coffin = {
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card pure_poison = {
-    .name = "Pure Poison", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card venomous_turn = {
+    .name = "Venomous Turn", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card corrupted_banquet = {
-    .name = "Corrupted Banquet", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card corrupted_destiny = {
+    .name = "Corrupted Destiny", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card poisoned_purity = {
+    .name = "Poisoned Purity", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
 // Epic cards with major poison effects
-Card seven_snakes_wrath = {
-    .name = "Seven Snakes Wrath", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = seven_snakes_wrath_effect
+Card seven_serpents = {
+    .name = "Seven Serpents", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = seven_serpents_effect
 };
 
-Card mirror_rain = {
-    .name = "Mirror Rain", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = mirror_rain_effect
+Card rain_of_mirrors = {
+    .name = "Rain of Mirrors", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = rain_of_mirrors_effect
 };
 
-Card brewing_disaster = {
-    .name = "Brewing Disaster", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = brewing_disaster_effect
+Card brewing_destruction = {
+    .name = "Brewing Destruction", .type = EPIC, .val = 0, .cst = 0, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = brewing_destruction_effect
 };
 
 // Snow White's character data
-Fable snow_white_fable;
+Fable snow_white_fable={
+    "Snow White",{0,0,0,255},34,25,6,17,
+    .skill[0]={
+        .cards={&shard_storm,&shard_tempest,&crystal_coffin,&shard_vortex,&poisoned_purity},
+        .cnt=5
+    },
+    .skill[1]={
+        .cards={&tainted_offering,&tainted_feast,&corrupted_destiny,&tainted_maelstrom,&poisoned_purity},
+        .cnt=5
+    },
+    .skill[2]={
+        .cards={&shattered_passage,&shattered_truth,&venomous_turn,&shattered_destiny,&poisoned_purity},
+        .cnt=5
+    },
+    .epic={&seven_serpents,&rain_of_mirrors,&brewing_destruction}
+};
 
 //=============================================================================
 // SNOW WHITE STATE MANAGEMENT
@@ -321,7 +341,7 @@ void snow_white_turn_end(Player* player) {
     if (!sw_state) return;
     
     // Process any end-of-turn poison effects
-    if (sw_state->corrupted_banquet_active) {
+    if (sw_state->corrupted_destiny_active) {
         printf("Corrupted Banquet effect continues...\n");
     }
 }
@@ -331,7 +351,7 @@ void snow_white_turn_end(Player* player) {
 // These show different patterns of resource management and deck manipulation
 //=============================================================================
 
-void crystal_fragment_effect(void* self, void* target) {
+void shard_storm_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     SnowWhiteState* sw_state = get_snow_white_state(snow_white);
@@ -351,7 +371,7 @@ void crystal_fragment_effect(void* self, void* target) {
     printf("Crystal Fragment: Basic poison attack executed\n");
 }
 
-void crystal_vortex_effect(void* self, void* target) {
+void shard_tempest_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -370,7 +390,7 @@ void crystal_vortex_effect(void* self, void* target) {
     printf("Crystal Vortex: Enhanced deck disruption\n");
 }
 
-void crystal_storm_effect(void* self, void* target) {
+void shard_vortex_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     SnowWhiteState* sw_state = get_snow_white_state(snow_white);
@@ -388,7 +408,7 @@ void crystal_storm_effect(void* self, void* target) {
     }
     
     // Check for Crystal Coffin activation (deals 2+ damage)
-    if (crystal_storm.dmg >= 2) {
+    if (shard_vortex.dmg >= 2) {
         printf("Crystal Coffin triggered! Placing poison card...\n");
         place_poison_in_deck(opponent, 1, false); // Place level 1 poison on top
     }
@@ -396,7 +416,7 @@ void crystal_storm_effect(void* self, void* target) {
     printf("Crystal Storm: Maximum deck disruption\n");
 }
 
-void tainted_blessing_effect(void* self, void* target) {
+void tainted_offering_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     SnowWhiteState* sw_state = get_snow_white_state(snow_white);
@@ -414,7 +434,7 @@ void tainted_blessing_effect(void* self, void* target) {
     printf("Tainted Blessing: Defense with poison placement\n");
 }
 
-void broken_fantasy_effect(void* self, void* target) {
+void shattered_passage_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -432,7 +452,7 @@ void broken_fantasy_effect(void* self, void* target) {
     printf("Broken Fantasy: Repositioning with card removal option\n");
 }
 
-void seven_snakes_wrath_effect(void* self, void* target) {
+void seven_serpents_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -447,7 +467,7 @@ void seven_snakes_wrath_effect(void* self, void* target) {
     }
 }
 
-void mirror_rain_effect(void* self, void* target) {
+void rain_of_mirrors_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     SnowWhiteState* sw_state = get_snow_white_state(snow_white);
@@ -467,7 +487,7 @@ void mirror_rain_effect(void* self, void* target) {
     printf("Mirror Rain: Complete hand disruption!\n");
 }
 
-void brewing_disaster_effect(void* self, void* target) {
+void brewing_destruction_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -501,51 +521,14 @@ void brewing_disaster_effect(void* self, void* target) {
 // Shows how to set up a character with external resource dependencies
 //=============================================================================
 
-void init_snow_white_fable(void) {
-    // Initialize the poison supply system first
-    init_poison_supply();
-    
-    snow_white_fable = (Fable){
-        .name = "Snow White",
-        .Piece = {255, 255, 255, 255}, // Pure white
-        .health = 34,
-        .energy = 0,
-        .defense = 6,
-        .epic_threshold = 17,
-        .lane = 0
-    };
-    
-    // Set up skill decks
-    snow_white_fable.skill[0] = (Deck){ // Attack skills
-        .cards = {&crystal_fragment, &crystal_vortex, &crystal_vortex, &crystal_storm, &crystal_storm},
-        .cnt = 5
-    };
-    
-    snow_white_fable.skill[1] = (Deck){ // Defense skills  
-        .cards = {&tainted_blessing, &tainted_feast, &tainted_feast, &tainted_revelry, &tainted_revelry},
-        .cnt = 5
-    };
-    
-    snow_white_fable.skill[2] = (Deck){ // Movement skills
-        .cards = {&broken_fantasy, &broken_reality, &broken_reality, &broken_destiny, &broken_destiny},
-        .cnt = 5
-    };
-    
-    // Epic cards
-    snow_white_fable.epic[0] = seven_snakes_wrath;
-    snow_white_fable.epic[1] = mirror_rain;
-    snow_white_fable.epic[2] = brewing_disaster;
-}
-
 void setup_snow_white_player(Player* player) {
     if (!player) return;
     
-    init_snow_white_fable();
+    init_poison_supply();
     player->fable = &snow_white_fable;
     player->health = snow_white_fable.health;
     player->power = 0;
     player->defense = 0;
-    player->pos = snow_white_fable.lane;
     
     // Initialize Snow White's state
     init_snow_white_state(player);
@@ -558,9 +541,9 @@ void setup_snow_white_player(Player* player) {
     }
     
     // Add starting skills
-    add_deck(&player->draw, &crystal_fragment);
-    add_deck(&player->draw, &tainted_blessing);
-    add_deck(&player->draw, &broken_fantasy);
+    add_deck(&player->draw, &shard_storm);
+    add_deck(&player->draw, &tainted_offering);
+    add_deck(&player->draw, &shattered_passage);
     
     shuffle_deck(&player->draw);
     draw_hand(player, HAND_SIZE);
