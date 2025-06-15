@@ -355,22 +355,22 @@ void end_turn(void) {
     // Character-specific turn end effects (with safety checks)
     if (player->fable) {
         if (strcmp(player->fable->name, "Red Hood") == 0) {
-            // red_hood_turn_end(player); // Commented out until proper implementation
+            red_hood_turn_end(player); // Commented out until proper implementation
             printf("Red Hood turn end\n");
         } else if (strcmp(player->fable->name, "Alice") == 0) {
-            // alice_turn_end(player); // Commented out until proper implementation
+            alice_turn_end(player); // Commented out until proper implementation
             printf("Alice turn end\n");
         } else if (strcmp(player->fable->name, "Kaguya") == 0) {
-            // kaguya_turn_end(player); // Commented out until proper implementation
+            kaguya_turn_end(player); // Commented out until proper implementation
             printf("Kaguya turn end\n");
         } else if (strcmp(player->fable->name, "Mulan") == 0) {
-            // mulan_turn_end(player); // Commented out until proper implementation
+            mulan_turn_end(player); // Commented out until proper implementation
             printf("Mulan turn end\n");
         } else if (strcmp(player->fable->name, "Snow White") == 0) {
-            // snow_white_turn_end(player); // Commented out until proper implementation
+            snow_white_turn_end(player); // Commented out until proper implementation
             printf("Snow White turn end\n");
         } else if (strcmp(player->fable->name, "Match Girl") == 0) {
-            // match_girl_turn_end(player); // Commented out until proper implementation
+            match_girl_enhanced_turn_end(player); // Commented out until proper implementation
             printf("Match Girl turn end\n");
         }
     }
@@ -428,7 +428,7 @@ bool is_valid_target(Card* card, Player* caster, Player* target, int position) {
 PlayResult attempt_play_card(Player* player, Card* card, int target_pos) {
     if (!player || !card) return PLAY_RESULT_INVALID_CARD;
     
-    if (card->cst > player->power) return PLAY_RESULT_INSUFFICIENT_ENERGY;
+    //if (card->cst > player->power) return PLAY_RESULT_INSUFFICIENT_ENERGY;
     
     if (card->link && card->type >= SKILL_ATK && card->type <= SKILL_MOV) {
         return PLAY_RESULT_REQUIRES_LINK;
