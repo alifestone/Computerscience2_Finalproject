@@ -63,9 +63,10 @@ int alice_deck_size = sizeof(alice_deck) / sizeof(Card*);
 // === 判斷雙方是否在同一條路線，並回傳距離（不同行回傳 99）===
 int lane_distance(Player *self, Player *enemy) {
     if (!self || !enemy) return 99;
-    if (self->fable->lane != enemy->fable->lane) return 99;
-    return abs(self->fable->lane - enemy->fable->lane);
+    if (self->lane != enemy->lane) return 99;
+    return abs(self->lane - enemy->lane);
 }
+
 
 // === Alice 單張出牌邏輯 ===
 Card* alice_choose_card(Player *self, Player *enemy) {
@@ -106,7 +107,6 @@ bool alice_try_buy(Player *self, FableShop *shop) {
                     printf("[愛麗絲AI] 購買卡牌：%s\n", card->name);
                     add_deck(&self->disc, card);
                     self->fable->energy -= card->cst;
-                    // 將該牌從商店移除
                     for (int x = k; x < lists[j]->cnt - 1; ++x)
                         lists[j]->cards[x] = lists[j]->cards[x + 1];
                     lists[j]->cnt--;
@@ -118,30 +118,28 @@ bool alice_try_buy(Player *self, FableShop *shop) {
     return false;
 }
 
-// === Alice AI 回合主邏輯：只出一張牌或購買 ===
 void ai_alice_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[愛麗絲 AI] 回合開始\n");
+    bool acted = false;
 
-    Card *choice = alice_choose_card(self, enemy);
-    if (choice) {
-        printf("[愛麗絲AI] 出牌：%s\n", choice->name);
-        choice->effect(self, enemy);
-        self->fable->energy -= choice->cst;
-
-        // 從手牌中移除該牌
-        for (int i = 0; i < self->hand.cnt; ++i) {
-            if (self->hand.cards[i] == choice) {
-                self->hand.cards[i] = NULL;
-                break;
-            }
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *card = self->hand.cards[i];
+        if (card && card->effect && card->cst <= self->fable->energy) {
+            printf("[愛麗絲AI] 出牌：%s\n", card->name);
+            card->effect(self, enemy);
+            self->fable->energy -= card->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
         }
-        return;
     }
 
-    // 若沒打牌就購買卡牌
-    alice_try_buy(self, shop);
+    if (!acted) {
+        alice_try_buy(self, shop);
+    }
+
     printf("[愛麗絲AI] 回合結束\n");
 }
+
 
 //red hood
 extern Card pot_shot;
@@ -224,22 +222,23 @@ bool redhood_try_buy(Player *self, FableShop *shop) {
 void ai_redhood_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[紅帽 AI] 回合開始\n");
 
-    Card *choice = redhood_choose_card(self, enemy);
-    if (choice) {
-        printf("[紅帽AI] 出牌：%s\n", choice->name);
-        choice->effect(self, enemy);
-        self->fable->energy -= choice->cst;
-        for (int i = 0; i < self->hand.cnt; ++i) {
-            if (self->hand.cards[i] == choice) {
-                self->hand.cards[i] = NULL;
-                break;
-            }
+    bool acted = false;
+
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *card = self->hand.cards[i];
+        if (card && card->effect && card->cst <= self->fable->energy) {
+            printf("[紅帽AI] 出牌：%s\n", card->name);
+            card->effect(self, enemy);
+            self->fable->energy -= card->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
         }
-        return;
     }
 
-    redhood_try_buy(self, shop);
-    printf("[紅帽AI] 回合結束\n");
+    if (!acted) {
+        redhood_try_buy(self, shop);
+        printf("[紅帽AI] 回合結束\n");
+    }
 }
 
 //mulan
@@ -331,26 +330,29 @@ bool mulan_try_buy(Player *self, FableShop *shop) {
     }
     return false;
 }
+
 void ai_mulan_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[花木蘭 AI] 回合開始\n");
+    bool acted = false;
 
-    Card *choice = mulan_choose_card(self, enemy);
-    if (choice) {
-        printf("[花木蘭AI] 出牌：%s\n", choice->name);
-        choice->effect(self, enemy);
-        self->fable->energy -= choice->cst;
-        for (int i = 0; i < self->hand.cnt; ++i) {
-            if (self->hand.cards[i] == choice) {
-                self->hand.cards[i] = NULL;
-                break;
-            }
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *card = self->hand.cards[i];
+        if (card && card->effect && card->cst <= self->fable->energy) {
+            printf("[花木蘭AI] 出牌：%s\n", card->name);
+            card->effect(self, enemy);
+            self->fable->energy -= card->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
         }
-        return;
     }
 
-    mulan_try_buy(self, shop);
+    if (!acted) {
+        mulan_try_buy(self, shop);
+    }
+
     printf("[花木蘭AI] 回合結束\n");
 }
+
 
 //snow
 // extern Card poison1;        // 1級中毒牌
@@ -469,24 +471,26 @@ bool snow_try_buy(Player *self, FableShop *shop) {
 
 void ai_snowwhite_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[白雪 AI] 回合開始\n");
+    bool acted = false;
 
-    Card *choice = snow_choose_card(self, enemy);
-    if (choice) {
-        printf("[白雪AI] 出牌：%s\n", choice->name);
-        choice->effect(self, enemy);
-        self->fable->energy -= choice->cst;
-        for (int i = 0; i < self->hand.cnt; ++i) {
-            if (self->hand.cards[i] == choice) {
-                self->hand.cards[i] = NULL;
-                break;
-            }
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *card = self->hand.cards[i];
+        if (card && card->effect && card->cst <= self->fable->energy) {
+            printf("[白雪AI] 出牌：%s\n", card->name);
+            card->effect(self, enemy);
+            self->fable->energy -= card->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
         }
-        return;
     }
 
-    snow_try_buy(self, shop);
+    if (!acted) {
+        snow_try_buy(self, shop);
+    }
+
     printf("[白雪AI] 回合結束\n");
 }
+
 
 //kaguya
 extern Card ascendant_light;       // 領悟的光芒
@@ -585,24 +589,50 @@ bool kaguya_try_buy(Player *self, FableShop *shop) {
 
 void ai_kaguya_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[輝夜 AI] 回合開始\n");
+    bool acted = false;
+    int dist = abs(self->lane - enemy->lane);
 
-    Card *choice = kaguya_choose_card(self, enemy);
-    if (choice) {
-        printf("[輝夜AI] 出牌：%s\n", choice->name);
-        choice->effect(self, enemy);
-        self->fable->energy -= choice->cst;
-        for (int i = 0; i < self->hand.cnt; ++i) {
-            if (self->hand.cards[i] == choice) {
-                self->hand.cards[i] = NULL;
-                break;
-            }
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *c = self->hand.cards[i];
+        if (!c || !c->effect || c->cst > self->fable->energy) continue;
+
+        if ((c->type == BASIC_ATK || c->type == SKILL_ATK || c->type == EPIC) &&
+            c->rng >= dist) {
+            printf("[輝夜AI] 出牌：%s\n", c->name);
+            c->effect(self, enemy);
+            self->fable->energy -= c->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
+            continue;
         }
-        return;
+
+        if ((c->type == BASIC_DEF || c->type == SKILL_DEF) &&
+            (self->fable->defense <= 3 || self->health < 20)) {
+            printf("[輝夜AI] 出牌：%s\n", c->name);
+            c->effect(self, enemy);
+            self->fable->energy -= c->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
+            continue;
+        }
+
+        if ((c->type == BASIC_MOV || c->type == SKILL_MOV) &&
+            dist > 1) {
+            printf("[輝夜AI] 出牌：%s\n", c->name);
+            c->effect(self, enemy);
+            self->fable->energy -= c->cst;
+            self->hand.cards[i] = NULL;
+            acted = true;
+        }
     }
 
-    kaguya_try_buy(self, shop);
+    if (!acted) {
+        kaguya_try_buy(self, shop);
+    }
+
     printf("[輝夜AI] 回合結束\n");
 }
+
 // Match Girl
 extern Card make_a_wish;    // Phantom Wish
 extern Card regret_a_wish;   // Secret Desire
@@ -689,21 +719,27 @@ bool mg_try_buy(Player *self, FableShop *shop) {
 
 void ai_match_girl_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("\n[火柴女孩 AI] 回合開始\n");
+    bool acted = false;
 
-    Card *choice = mg_choose_card(self, enemy);
-    if (choice) {
-        printf("[火柴AI] 出牌：%s\n", choice->name);
-        choice->effect(self, enemy);
-        self->fable->energy -= choice->cst;
-        for (int i = 0; i < self->hand.cnt; ++i) {
-            if (self->hand.cards[i] == choice) {
-                self->hand.cards[i] = NULL;
-                break;
-            }
-        }
-        return;
+    for (int i = 0; i < self->hand.cnt; ++i) {
+        Card *card = self->hand.cards[i];
+        if (!card || !card->effect || card->cst > self->fable->energy)
+            continue;
+
+        // ✅ 額外條件：例如需滿足 sb_token >= X 才能使用（如有的話可補這段）
+        // if (strcmp(card->name, "Doomfall") == 0 && self->sb_token < 3) continue;
+
+        printf("[火柴AI] 出牌：%s\n", card->name);
+        card->effect(self, enemy);
+        self->fable->energy -= card->cst;
+        self->hand.cards[i] = NULL;
+        acted = true;
     }
 
-    mg_try_buy(self, shop);
+    if (!acted) {
+        mg_try_buy(self, shop);
+    }
+
     printf("[火柴AI] 回合結束\n");
 }
+
