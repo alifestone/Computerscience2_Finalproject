@@ -351,6 +351,46 @@ void snow_white_turn_end(Player* player) {
 // These show different patterns of resource management and deck manipulation
 //=============================================================================
 
+void tainted_maelstrom_effect(void* self, void* target) {
+    Player* snow_white = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Snow White uses Tainted Maelstrom\n");
+    if (opponent) {
+        opponent->health -= 2;
+    }
+}
+
+void shattered_truth_effect(void* self, void* target) {
+    Player* snow_white = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Snow White uses Shattered Truth\n");
+    if (opponent) {
+        opponent->health -= 2;
+    }
+    // 移動到相鄰位置
+    if (snow_white && opponent) {
+        snow_white->pos = opponent->pos + ((snow_white->pos < opponent->pos) ? -1 : 1);
+        snow_white->pos = MAX(-4, MIN(4, snow_white->pos));
+    }
+}
+
+void shattered_destiny_effect(void* self, void* target) {
+    Player* snow_white = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Snow White uses Shattered Destiny\n");
+    if (opponent) {
+        opponent->health -= 3;
+    }
+    // 移動到相鄰位置
+    if (snow_white && opponent) {
+        snow_white->pos = opponent->pos + ((snow_white->pos < opponent->pos) ? -1 : 1);
+        snow_white->pos = MAX(-4, MIN(4, snow_white->pos));
+    }
+}
+
 void shard_storm_effect(void* self, void* target) {
     Player* snow_white = (Player*)self;
     Player* opponent = (Player*)target;

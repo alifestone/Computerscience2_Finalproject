@@ -337,6 +337,44 @@ void red_hood_turn_end(Player* player) {
 // These demonstrate clean, effective ability design
 //=============================================================================
 
+void electrified_shield_effect(void* self, void* target) {
+    Player* red_hood = (Player*)self;
+    
+    printf("Red Hood uses Electrified Shield\n");
+    if (red_hood) {
+        red_hood->defense = MIN(red_hood->defense + 4, red_hood->fable->defense);
+    }
+}
+
+void omega_shield_effect(void* self, void* target) {
+    Player* red_hood = (Player*)self;
+    
+    printf("Red Hood uses Omega Shield\n");
+    if (red_hood) {
+        red_hood->defense = MIN(red_hood->defense + 6, red_hood->fable->defense);
+    }
+}
+
+void unleashed_firepower_effect(void* self, void* target) {
+    Player* red_hood = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Red Hood uses Unleashed Firepower\n");
+    if (opponent) {
+        opponent->health -= 3;
+    }
+}
+
+void unleashed_fury_effect(void* self, void* target) {
+    Player* red_hood = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Red Hood uses Unleashed Fury\n");
+    if (opponent) {
+        opponent->health -= 4;
+    }
+}
+
 void pot_shot_effect(void* self, void* target) {
     Player* red_hood = (Player*)self;
     Player* opponent = (Player*)target;

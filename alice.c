@@ -294,6 +294,55 @@ void alice_update(Player* player, float delta_time) {
 // These implement the complex card manipulation mechanics
 //=============================================================================
 
+void cut_the_cards_effect(void* self, void* target) {
+    Player* alice = (Player*)self;
+    Player* opponent = (Player*)target;
+
+    printf("Alice uses Cut the Cards\n");
+    if (opponent) {
+        opponent->health -= 2; // 基礎傷害
+    }
+}
+
+void rig_the_cards_effect(void* self, void* target) {
+    Player* alice = (Player*)self;
+    Player* opponent = (Player*)target;
+
+    printf("Alice uses Rig the Cards\n");
+    if (opponent) {
+        opponent->health -= 3; // 基礎傷害
+    }
+}
+
+void mind_trick_effect(void* self, void* target) {
+    Player* alice = (Player*)self;
+
+    printf("Alice uses Mind Trick\n");
+    if (alice) {
+        alice->defense = MIN(alice->defense + 2, alice->fable->defense);
+    }
+}
+
+void curiously_covert_effect(void* self, void* target) {
+    Player* alice = (Player*)self;
+
+    printf("Alice uses Curiously Covert\n");
+    if (alice) {
+        // 移動效果的基礎實作
+        alice->pos = MIN(alice->pos + 2, 4);
+    }
+}
+
+void curiously_curious_effect(void* self, void* target) {
+    Player* alice = (Player*)self;
+
+    printf("Alice uses Curiously Curious\n");
+    if (alice) {
+        // 移動效果的基礎實作
+        alice->pos = MIN(alice->pos + 3, 4);
+    }
+}
+
 void deal_the_cards_effect(void* self, void* target) {
     Player* alice = (Player*)self;
     Player* opponent = (Player*)target;

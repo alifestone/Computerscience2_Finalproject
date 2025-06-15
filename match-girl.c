@@ -522,6 +522,64 @@ void on_opponent_uses_enhanced_fire_card(Player* match_girl, Card* fire_card) {
 // These show sophisticated energy spending and risk/reward mechanics
 //=============================================================================
 
+void regret_a_wish_effect(void* self, void* target) {
+    Player* match_girl = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Match Girl uses Regret a Wish\n");
+    if (opponent) {
+        opponent->health -= 2;
+    }
+}
+
+void requite_a_wish_effect(void* self, void* target) {
+    Player* match_girl = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Match Girl uses Requite a Wish\n");
+    if (opponent) {
+        opponent->health -= 3;
+    }
+}
+
+void diabolical_gamble_effect(void* self, void* target) {
+    Player* match_girl = (Player*)self;
+    
+    printf("Match Girl uses Diabolical Gamble\n");
+    if (match_girl) {
+        match_girl->defense = MIN(match_girl->defense + 1, match_girl->fable->defense);
+    }
+}
+
+void diabolical_deal_effect(void* self, void* target) {
+    Player* match_girl = (Player*)self;
+    
+    printf("Match Girl uses Diabolical Deal\n");
+    if (match_girl) {
+        match_girl->defense = MIN(match_girl->defense + 2, match_girl->fable->defense);
+    }
+}
+
+void your_soul_wanting_effect(void* self, void* target) {
+    Player* match_girl = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Match Girl uses Your Soul Wanting\n");
+    if (opponent) {
+        opponent->health -= 2;
+    }
+}
+
+void your_soul_ravaged_effect(void* self, void* target) {
+    Player* match_girl = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Match Girl uses Your Soul Ravaged\n");
+    if (opponent) {
+        opponent->health -= 3;
+    }
+}
+
 void make_a_wish_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     Player* opponent = (Player*)target;

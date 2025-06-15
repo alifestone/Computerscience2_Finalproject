@@ -647,7 +647,7 @@ void CharacterSelection(SDL_Renderer *ren,Player *p1,Player *p2){
     g_ctx->players[0]=p1;
     g_ctx->players[1]=p2;
     change_game_state(GAME_STATE_CHARACTER_SELECT);
-    Fable CharacterBase[6]={red_hood_enhanced_fable,snow_white_fable,alice_fable,kaguya_fable,mulan_fable,match_girl_enhanced_fable};
+    Fable CharacterBase[6]={red_hood_fable,snow_white_fable,alice_fable,kaguya_fable,mulan_fable,match_girl_enhanced_fable};
     bool inselect=1,p1_selected=0,p2_selected=0;
     SDL_Event e;
     SDL_SetRenderDrawColor(ren,255,255,255,255);

@@ -473,6 +473,28 @@ void kaguya_on_damage_taken(Player* kaguya_player, int damage, Player* source) {
 // These demonstrate conditional effects and filtering mechanics
 //=============================================================================
 
+void ascendant_glory_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Kaguya uses Ascendant Glory\n");
+    if (opponent) {
+        int damage = (kaguya && kaguya->defense >= 3) ? 3 : 2;
+        opponent->health -= damage;
+    }
+}
+
+void ascendant_avatar_effect(void* self, void* target) {
+    Player* kaguya = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Kaguya uses Ascendant Avatar\n");
+    if (opponent) {
+        int damage = (kaguya && kaguya->defense >= 3) ? 4 : 3;
+        opponent->health -= damage;
+    }
+}
+
 void ascendant_light_effect(void* self, void* target) {
     Player* kaguya = (Player*)self;
     Player* opponent = (Player*)target;

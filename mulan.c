@@ -394,6 +394,57 @@ void mulan_turn_end(Player* player) {
 // These show how Chi enhances different types of actions
 //=============================================================================
 
+void undeniable_effect(void* self, void* target) {
+    Player* mulan = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Mulan uses Undeniable\n");
+    if (opponent) {
+        opponent->health -= 2;
+    }
+}
+
+void undiminished_effect(void* self, void* target) {
+    Player* mulan = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Mulan uses Undiminished\n");
+    if (opponent) {
+        opponent->health -= 3;
+    }
+}
+
+void diverted_might_effect(void* self, void* target) {
+    Player* mulan = (Player*)self;
+    
+    printf("Mulan uses Diverted Might\n");
+    if (mulan) {
+        mulan->defense = MIN(mulan->defense + 2, mulan->fable->defense);
+    }
+}
+
+void diverted_wrath_effect(void* self, void* target) {
+    Player* mulan = (Player*)self;
+    
+    printf("Mulan uses Diverted Wrath\n");
+    if (mulan) {
+        mulan->defense = MIN(mulan->defense + 3, mulan->fable->defense);
+    }
+}
+
+void no_quarter_effect(void* self, void* target) {
+    Player* mulan = (Player*)self;
+    Player* opponent = (Player*)target;
+    
+    printf("Mulan uses No Quarter\n");
+    if (opponent) {
+        opponent->health -= 2;
+        // 位置移動效果
+        opponent->pos += (mulan->pos < opponent->pos) ? 1 : -1;
+        opponent->pos = MAX(-4, MIN(4, opponent->pos));
+    }
+}
+
 void underestimated_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     Player* opponent = (Player*)target;
