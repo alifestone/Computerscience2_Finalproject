@@ -65,20 +65,20 @@ static EnhancedFireCard enhanced_fire_supply[12];
 static bool enhanced_fire_initialized = false;
 
 // Forward declarations for enhanced card effects
-void phantom_wish_enhanced_effect(void* self, void* target);
-void secret_desire_enhanced_effect(void* self, void* target);
-void endless_luxury_enhanced_effect(void* self, void* target);
-void devil_sacrifice_enhanced_effect(void* self, void* target);
-void devil_bet_enhanced_effect(void* self, void* target);
-void devil_contract_enhanced_effect(void* self, void* target);
-void weightless_soul_enhanced_effect(void* self, void* target);
-void indebted_soul_enhanced_effect(void* self, void* target);
-void broken_soul_enhanced_effect(void* self, void* target);
+void make_a_wish_effect(void* self, void* target);
+void regret_a_wish_effect(void* self, void* target);
+void requite_a_wish_effect(void* self, void* target);
+void diabolical_offer_effect(void* self, void* target);
+void diabolical_gamble_effect(void* self, void* target);
+void diabolical_deal_effect(void* self, void* target);
+void your_soul_weighed_effect(void* self, void* target);
+void your_soul_wanting_effect(void* self, void* target);
+void your_soul_ravaged_effect(void* self, void* target);
 
 // Enhanced epic effects
-void hell_flame_enhanced_effect(void* self, void* target);
-void doomfall_enhanced_effect(void* self, void* target);
-void curse_of_greed_enhanced_effect(void* self, void* target);
+void inferno_overload_effect(void* self, void* target);
+void the_demons_due_effect(void* self, void* target);
+void a_surfeit_of_wishes_effect(void* self, void* target);
 
 //=============================================================================
 // ENHANCED FIRE CARD SYSTEM
@@ -250,70 +250,108 @@ bool can_trade_life_for_cards(MatchGirlState* mg_state, Player* match_girl, int 
 //=============================================================================
 
 // Enhanced attack cards with flexible energy spending
-Card phantom_wish_enhanced = {
-    .name = "Phantom Wish", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = phantom_wish_enhanced_effect
+Card make_a_wish = {
+    .name = "Make a Wish", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = make_a_wish_effect
 };
 
-Card secret_desire_enhanced = {
-    .name = "Secret Desire", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = secret_desire_enhanced_effect
+Card regret_a_wish = {
+    .name = "Regret a Wish", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = regret_a_wish_effect
 };
 
-Card endless_luxury_enhanced = {
-    .name = "Endless Luxury", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = endless_luxury_enhanced_effect
+Card requite_a_wish = {
+    .name = "Requite a Wish", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = requite_a_wish_effect
 };
 
 // Enhanced defense cards with life trading
-Card devil_sacrifice_enhanced = {
-    .name = "Devil's Sacrifice", .type = SKILL_DEF, .val = 1, .cst = 0, .dmg = 0,
-    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = devil_sacrifice_enhanced_effect
+Card diabolical_offer = {
+    .name = "Diabolical Offer", .type = SKILL_DEF, .val = 1, .cst = 0, .dmg = 0,
+    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = diabolical_offer_effect
 };
 
-Card devil_bet_enhanced = {
-    .name = "Devil's Bet", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = devil_bet_enhanced_effect
+Card diabolical_gamble = {
+    .name = "Diabolical Gamble", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
+    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = diabolical_gamble_effect
 };
 
-Card devil_contract_enhanced = {
-    .name = "Devil's Contract", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
-    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = devil_contract_enhanced_effect
+Card diabolical_deal = {
+    .name = "Diabolical Deal", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
+    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = diabolical_deal_effect
 };
 
 // Enhanced movement cards with fire retrieval
-Card weightless_soul_enhanced = {
-    .name = "Weightless Soul", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = weightless_soul_enhanced_effect
+Card your_soul_weighed = {
+    .name = "Your Soul Weighed", .type = SKILL_MOV, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = your_soul_weighed_effect
 };
 
-Card indebted_soul_enhanced = {
-    .name = "Indebted Soul", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 2, .link = false, .effect = indebted_soul_enhanced_effect
+Card your_soul_wanting = {
+    .name = "Your Soul Wanting", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 2, .link = false, .effect = your_soul_wanting_effect
 };
 
-Card broken_soul_enhanced = {
-    .name = "Broken Soul", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = broken_soul_enhanced_effect
+Card your_soul_ravaged = {
+    .name = "Your Soul Ravaged", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = your_soul_ravaged_effect
 };
 
 // Enhanced epic cards with ultimate energy effects
-Card hell_flame_enhanced = {
-    .name = "Hell Flame", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = hell_flame_enhanced_effect
+Card inferno_overload = {
+    .name = "Inferno Overload", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = inferno_overload_effect
 };
 
-Card doomfall_enhanced = {
-    .name = "Doomfall", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = doomfall_enhanced_effect
+Card the_demons_due = {
+    .name = "The Demon's Due", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = the_demons_due_effect
 };
 
-Card curse_of_greed_enhanced = {
-    .name = "Curse of Greed", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = curse_of_greed_enhanced_effect
+Card a_surfeit_of_wishes = {
+    .name = "A Surfeit of Wishes", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = a_surfeit_of_wishes_effect
 };
 
-Fable match_girl_enhanced_fable;
+// twist
+Card ritual_of_pain = {
+    .name = "Ritual of Pain", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card inflamed_craving = {
+    .name = "Inflamed Craving", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card after_all_ive_given = {
+    .name = "After All I've Given", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card playing_with_fire = {
+    .name = "Playing With Fire", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Fable match_girl_enhanced_fable={
+    "Match Girl",{255,127,36,255},36,0,0,18,
+    .skill={
+        {
+            .cards={&make_a_wish,&regret_a_wish,&ritual_of_pain,&requite_a_wish,&playing_with_fire},
+            .cnt=5
+        },
+        {
+            .cards={&diabolical_offer,&diabolical_gamble,&inflamed_craving,&diabolical_deal,&playing_with_fire},
+            .cnt=5
+        },
+        {
+            .cards={&your_soul_weighed,&your_soul_wanting,&after_all_ive_given,&your_soul_ravaged,&playing_with_fire},
+            .cnt=5
+        }
+    },
+    .epic={&inferno_overload,&the_demons_due,&a_surfeit_of_wishes}
+};
 
 //=============================================================================
 // ENHANCED MATCH GIRL STATE MANAGEMENT
@@ -484,7 +522,7 @@ void on_opponent_uses_enhanced_fire_card(Player* match_girl, Card* fire_card) {
 // These show sophisticated energy spending and risk/reward mechanics
 //=============================================================================
 
-void phantom_wish_enhanced_effect(void* self, void* target) {
+void make_a_wish_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     Player* opponent = (Player*)target;
     MatchGirlState* mg_state = get_enhanced_match_girl_state(match_girl);
@@ -512,7 +550,7 @@ void phantom_wish_enhanced_effect(void* self, void* target) {
     }
 }
 
-void devil_sacrifice_enhanced_effect(void* self, void* target) {
+void diabolical_offer_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     MatchGirlState* mg_state = get_enhanced_match_girl_state(match_girl);
     
@@ -536,7 +574,7 @@ void devil_sacrifice_enhanced_effect(void* self, void* target) {
     printf("Devil's Sacrifice: +%d defense and risk/reward option\n", defense_gain);
 }
 
-void weightless_soul_enhanced_effect(void* self, void* target) {
+void your_soul_weighed_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     Player* opponent = (Player*)target;
     MatchGirlState* mg_state = get_enhanced_match_girl_state(match_girl);
@@ -572,7 +610,7 @@ void weightless_soul_enhanced_effect(void* self, void* target) {
     printf("Weightless Soul: %d damage and %d fire cards retrieved\n", damage, fire_cards_found);
 }
 
-void hell_flame_enhanced_effect(void* self, void* target) {
+void inferno_overload_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     Player* opponent = (Player*)target;
     MatchGirlState* mg_state = get_enhanced_match_girl_state(match_girl);
@@ -590,7 +628,7 @@ void hell_flame_enhanced_effect(void* self, void* target) {
     }
 }
 
-void doomfall_enhanced_effect(void* self, void* target) {
+void the_demons_due_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     Player* opponent = (Player*)target;
     MatchGirlState* mg_state = get_enhanced_match_girl_state(match_girl);
@@ -621,7 +659,7 @@ void doomfall_enhanced_effect(void* self, void* target) {
     }
 }
 
-void curse_of_greed_enhanced_effect(void* self, void* target) {
+void a_surfeit_of_wishes_effect(void* self, void* target) {
     Player* match_girl = (Player*)self;
     Player* opponent = (Player*)target;
     MatchGirlState* mg_state = get_enhanced_match_girl_state(match_girl);
@@ -650,54 +688,13 @@ void curse_of_greed_enhanced_effect(void* self, void* target) {
 // Shows setup of complex interdependent systems
 //=============================================================================
 
-void init_enhanced_match_girl_fable(void) {
-    // Initialize the enhanced fire supply
-    init_enhanced_fire_supply();
-    
-    match_girl_enhanced_fable = (Fable){
-        .name = "Match Girl",
-        .Piece = {255, 127, 36, 255}, // Warm orange for fire
-        .health = 36,
-        .energy = 0, // Uses custom energy system
-        .defense = 0, // Low defense, relies on energy for power
-        .epic_threshold = 18,
-        .lane = 1
-    };
-    
-    // Set up skill decks emphasizing energy synergy
-    match_girl_enhanced_fable.skill[0] = (Deck){ // Attack skills with energy enhancement
-        .cards = {&phantom_wish_enhanced, &secret_desire_enhanced, &secret_desire_enhanced,
-                 &endless_luxury_enhanced, &endless_luxury_enhanced},
-        .cnt = 5
-    };
-    
-    match_girl_enhanced_fable.skill[1] = (Deck){ // Defense skills with life trading
-        .cards = {&devil_sacrifice_enhanced, &devil_bet_enhanced, &devil_bet_enhanced,
-                 &devil_contract_enhanced, &devil_contract_enhanced},
-        .cnt = 5
-    };
-    
-    match_girl_enhanced_fable.skill[2] = (Deck){ // Movement skills with fire management
-        .cards = {&weightless_soul_enhanced, &indebted_soul_enhanced, &indebted_soul_enhanced,
-                 &broken_soul_enhanced, &broken_soul_enhanced},
-        .cnt = 5
-    };
-    
-    // Epic cards with ultimate energy effects
-    match_girl_enhanced_fable.epic[0] = hell_flame_enhanced;
-    match_girl_enhanced_fable.epic[1] = doomfall_enhanced;
-    match_girl_enhanced_fable.epic[2] = curse_of_greed_enhanced;
-}
-
 void setup_enhanced_match_girl_player(Player* player) {
     if (!player) return;
     
-    init_enhanced_match_girl_fable();
     player->fable = &match_girl_enhanced_fable;
     player->health = match_girl_enhanced_fable.health;
     player->power = 0;
     player->defense = 0;
-    player->pos = match_girl_enhanced_fable.lane;
     
     // Initialize Match Girl's enhanced systems
     init_enhanced_match_girl_state(player);
@@ -710,9 +707,9 @@ void setup_enhanced_match_girl_player(Player* player) {
     }
     
     // Add starting skills
-    add_deck(&player->draw, &phantom_wish_enhanced);
-    add_deck(&player->draw, &devil_sacrifice_enhanced);
-    add_deck(&player->draw, &weightless_soul_enhanced);
+    add_deck(&player->draw, &make_a_wish);
+    add_deck(&player->draw, &diabolical_offer);
+    add_deck(&player->draw, &your_soul_weighed);
     
     shuffle_deck(&player->draw);
     draw_hand(player, HAND_SIZE);
