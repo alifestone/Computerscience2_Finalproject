@@ -42,20 +42,20 @@ static const IdentityModifier identity_data[3] = {
 };
 
 // Function declarations for Alice's card effects
-void opening_game_effect(void* self, void* target);
-void twisting_game_effect(void* self, void* target);
-void controlling_game_effect(void* self, void* target);
+void deal_the_cards_effect(void* self, void* target);
+void cut_the_cards_effect(void* self, void* target);
+void rig_the_cards_effect(void* self, void* target);
 void magic_trick_effect(void* self, void* target);
-void mental_illusion_effect(void* self, void* target);
+void mind_trick_effect(void* self, void* target);
 void hat_trick_effect(void* self, void* target);
-void strange_agility_effect(void* self, void* target);
-void strange_stealth_effect(void* self, void* target);
-void strange_weird_effect(void* self, void* target);
+void curiously_agile_effect(void* self, void* target);
+void curiously_covert_effect(void* self, void* target);
+void curiously_curious_effect(void* self, void* target);
 
 // Epic card effects
-void endless_party_effect(void* self, void* target);
-void wonderful_day_effect(void* self, void* target);
-void game_control_effect(void* self, void* target);
+void important_date_effect(void* self, void* target);
+void frabjous_day_effect(void* self, void* target);
+void the_games_afoot_effect(void* self, void* target);
 
 //=============================================================================
 // ALICE'S CARD DEFINITIONS
@@ -63,19 +63,19 @@ void game_control_effect(void* self, void* target);
 //=============================================================================
 
 // Attack cards with identity synergy
-Card opening_game = {
-    .name = "Opening Game", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1, 
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = opening_game_effect
+Card deal_the_cards = {
+    .name = "Deal the Cards", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1, 
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = deal_the_cards_effect
 };
 
-Card twisting_game = {
-    .name = "Twisting Game", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 2, .link = false, .effect = twisting_game_effect
+Card cut_the_cards = {
+    .name = "Cut the Cards", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 2, .link = false, .effect = cut_the_cards_effect
 };
 
-Card controlling_game = {
-    .name = "Controlling Game", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = controlling_game_effect
+Card rig_the_cards = {
+    .name = "Rig the cards", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = rig_the_cards_effect
 };
 
 // Defense cards with card manipulation
@@ -84,9 +84,9 @@ Card magic_trick = {
     .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = magic_trick_effect
 };
 
-Card mental_illusion = {
-    .name = "Mental Illusion", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = mental_illusion_effect
+Card mind_trick = {
+    .name = "Mind Trick", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
+    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = mind_trick_effect
 };
 
 Card hat_trick = {
@@ -95,60 +95,77 @@ Card hat_trick = {
 };
 
 // Movement cards with card draw synergy
-Card strange_agility = {
-    .name = "Strange Agility", .type = SKILL_MOV, .val = 1, .cst = 1, .dmg = 0,
-    .defense = 0, .mov = 1, .rng = 0, .link = false, .effect = strange_agility_effect
+Card curiously_agile = {
+    .name = "Curiously Agile", .type = SKILL_MOV, .val = 1, .cst = 1, .dmg = 0,
+    .defense = 0, .mov = 1, .rng = 0, .link = false, .effect = curiously_agile_effect
 };
 
-Card strange_stealth = {
-    .name = "Strange Stealth", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 0, .mov = 2, .rng = 0, .link = false, .effect = strange_stealth_effect
+Card curiously_covert = {
+    .name = "Curiously Covert", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 0,
+    .defense = 0, .mov = 2, .rng = 0, .link = false, .effect = curiously_covert_effect
 };
 
-Card strange_weird = {
-    .name = "Strange Weird", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 0,
-    .defense = 0, .mov = 3, .rng = 0, .link = false, .effect = strange_weird_effect
+Card curiously_curious = {
+    .name = "Curiously Curious  ", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 0,
+    .defense = 0, .mov = 3, .rng = 0, .link = false, .effect = curiously_curious_effect
 };
 
 // Twist cards that modify identity rules
-Card off_with_head = {
-    .name = "Off With Head", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card off_with_her_head = {
+    .name = "Off With Her Head", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card wonderland_descent = {
-    .name = "Wonderland Descent", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card wonderland = {
+    .name = "Wonderland", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card all_mad_here = {
-    .name = "All Mad Here", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card were_all_mad_here = {
+    .name = "We're All Mad Here", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card start_performance = {
-    .name = "Start Performance", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card its_showtime = {
+    .name = "It's Showtime", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
 // Epic cards with game-changing effects
-Card endless_party = {
-    .name = "Endless Party", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = endless_party_effect
+Card important_date = {
+    .name = "Important Date", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = important_date_effect
 };
 
-Card wonderful_day = {
-    .name = "Wonderful Day", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = wonderful_day_effect
+Card frabjous_day = {
+    .name = "Frabjous Day", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = frabjous_day_effect
 };
 
-Card game_control = {
-    .name = "Game Control", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = game_control_effect
+Card the_games_afoot = {
+    .name = "The Game's Afoot", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = the_games_afoot_effect
 };
 
 // Alice's complete character definition
-Fable alice_fable;
+Fable alice_fable={
+    "Alice",{0,150,255,255},32,0,6,16,
+    .skill={
+        {
+            .cards={&deal_the_cards,&cut_the_cards,&off_with_her_head,&rig_the_cards,&its_showtime},
+            .cnt=5
+        },
+        {
+            .cards={&magic_trick,&mind_trick,&wonderland,&hat_trick,&its_showtime},
+            .cnt=5
+        },
+        {
+            .cards={&curiously_agile,&curiously_covert,&were_all_mad_here,&curiously_curious,&its_showtime},
+            .cnt=5
+        }
+    },
+    .epic={&important_date,&frabjous_day,&the_games_afoot}
+};
 
 //=============================================================================
 // ALICE STATE MANAGEMENT FUNCTIONS
@@ -277,7 +294,7 @@ void alice_update(Player* player, float delta_time) {
 // These implement the complex card manipulation mechanics
 //=============================================================================
 
-void opening_game_effect(void* self, void* target) {
+void deal_the_cards_effect(void* self, void* target) {
     Player* alice = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -335,7 +352,7 @@ void magic_trick_effect(void* self, void* target) {
     printf("Alice may transform into Mad Hatter!\n");
 }
 
-void strange_agility_effect(void* self, void* target) {
+void curiously_agile_effect(void* self, void* target) {
     Player* alice = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -343,7 +360,7 @@ void strange_agility_effect(void* self, void* target) {
     // "If you pass through opponent, draw 1 card"
     // "May transform into Cheshire Cat"
     
-    int movement_range = 1 + alice_get_card_modifier(alice, &strange_agility, "movement");
+    int movement_range = 1 + alice_get_card_modifier(alice, &curiously_agile, "movement");
     
     // Check if movement would pass through opponent
     bool passes_through = false; // Would need position calculation in full implementation
@@ -356,7 +373,7 @@ void strange_agility_effect(void* self, void* target) {
     printf("Alice may transform into Cheshire Cat!\n");
 }
 
-void endless_party_effect(void* self, void* target) {
+void important_date_effect(void* self, void* target) {
     Player* alice = (Player*)self;
     
     // "After drawing cards at end of turn, discard down to 4 cards and immediately start a new turn"
@@ -374,7 +391,7 @@ void endless_party_effect(void* self, void* target) {
     // In full implementation, would trigger additional turn
 }
 
-void wonderful_day_effect(void* self, void* target) {
+void frabjous_day_effect(void* self, void* target) {
     Player* alice = (Player*)self;
     
     // "Until end of turn, attack/defense/movement cards get +1 to their values"
@@ -384,7 +401,7 @@ void wonderful_day_effect(void* self, void* target) {
     // Would create a temporary effect that modifies card values
 }
 
-void game_control_effect(void* self, void* target) {
+void the_games_afoot_effect(void* self, void* target) {
     Player* alice = (Player*)self;
     Player* opponent = (Player*)target;
     
@@ -424,49 +441,14 @@ void game_control_effect(void* self, void* target) {
 // Sets up Alice's complete character data and deck composition
 //=============================================================================
 
-void init_alice_fable(void) {
-    alice_fable = (Fable){
-        .name = "Alice",
-        .Piece = {0, 150, 255, 255}, // Blue for Alice in Wonderland
-        .health = 32,
-        .energy = 0,  // Alice doesn't use energy in the traditional sense
-        .defense = 6,
-        .epic_threshold = 16,
-        .lane = 0 // Starting position
-    };
-    
-    // Set up skill decks with Alice's unique cards
-    alice_fable.skill[0] = (Deck){ // Attack skills
-        .cards = {&opening_game, &twisting_game, &twisting_game, &controlling_game, &controlling_game},
-        .cnt = 5
-    };
-    
-    alice_fable.skill[1] = (Deck){ // Defense skills
-        .cards = {&magic_trick, &mental_illusion, &mental_illusion, &hat_trick, &hat_trick},
-        .cnt = 5
-    };
-    
-    alice_fable.skill[2] = (Deck){ // Movement skills
-        .cards = {&strange_agility, &strange_stealth, &strange_stealth, &strange_weird, &strange_weird},
-        .cnt = 5
-    };
-    
-    // Set up epic cards
-    alice_fable.epic[0] = endless_party;
-    alice_fable.epic[1] = wonderful_day;
-    alice_fable.epic[2] = game_control;
-}
-
 void setup_alice_player(Player* player) {
     if (!player) return;
     
     // Initialize base character
-    init_alice_fable();
     player->fable = &alice_fable;
     player->health = alice_fable.health;
     player->power = 0;
     player->defense = 0;
-    player->pos = alice_fable.lane;
     
     // Initialize Alice-specific state
     init_alice_state(player);
@@ -479,9 +461,9 @@ void setup_alice_player(Player* player) {
     }
     
     // Add one level 1 skill from each category
-    add_deck(&player->draw, &opening_game);
+    add_deck(&player->draw, &deal_the_cards);
     add_deck(&player->draw, &magic_trick);
-    add_deck(&player->draw, &strange_agility);
+    add_deck(&player->draw, &curiously_agile);
     
     // Shuffle and draw initial hand
     shuffle_deck(&player->draw);
