@@ -77,7 +77,7 @@ typedef struct {
     int32_t epic_threshold;
     int32_t lane;       //0, 1, or 2
     Deck skill[3];  //技能牌庫
-    Card epic[3];
+    Card* epic[3];
     void* character_state; // Generic pointer for character-specific state
 } Fable;
 
