@@ -23,7 +23,7 @@ typedef struct ChiSystem {
     int max_chi;              // Maximum Chi that can be stored
     int chi_per_damage;       // Chi gained when taking damage
     int chi_per_counter;      // Chi gained when successfully countering
-    bool storm_gathering;     // From "Storm Gathering" twist - gains Chi each turn
+    bool gathering_storm;     // From "Storm Gathering" twist - gains Chi each turn
 } ChiSystem;
 
 // Counter-attack system - this is the heart of Mulan's reactive gameplay
@@ -39,26 +39,26 @@ typedef struct CounterSystem {
 typedef struct MulanState {
     ChiSystem chi;
     CounterSystem counter;
-    bool energy_throughout_active;     // Twist effect state
+    bool channeled_qi_active;     // Twist effect state
     int consecutive_blocks;            // Tracks defensive momentum
     int damage_taken_this_turn;        // For Chi generation
 } MulanState;
 
 // Forward declarations for Mulan's card effects
-void underestimate_effect(void* self, void* target);
-void unstoppable_effect(void* self, void* target);
-void indestructible_effect(void* self, void* target);
-void calm_control_effect(void* self, void* target);
-void soft_overcome_hard_effect(void* self, void* target);
-void weak_defeat_strong_effect(void* self, void* target);
-void never_retreat_effect(void* self, void* target);
+void underestimated_effect(void* self, void* target);
+void undeniable_effect(void* self, void* target);
+void undiminished_effect(void* self, void* target);
+void diverted_fire_effect(void* self, void* target);
+void diverted_might_effect(void* self, void* target);
+void diverted_wrath_effect(void* self, void* target);
+void no_retreat_effect(void* self, void* target);
+void no_quarter_effect(void* self, void* target);
 void no_mercy_effect(void* self, void* target);
-void never_forgive_effect(void* self, void* target);
 
 // Epic effects
-void soaring_spirit_effect(void* self, void* target);
-void face_chaos_effect(void* self, void* target);
-void thunder_strike_effect(void* self, void* target);
+void legends_call_effect(void* self, void* target);
+void confronting_chaos_effect(void* self, void* target);
+void honors_thunder_effect(void* self, void* target);
 
 //=============================================================================
 // CHI ENERGY SYSTEM
@@ -72,7 +72,7 @@ void init_chi_system(ChiSystem* chi) {
     chi->max_chi = 10;          // Reasonable upper limit for balance
     chi->chi_per_damage = 1;    // Gain 1 Chi per point of damage taken
     chi->chi_per_counter = 2;   // Bonus Chi for successful counters
-    chi->storm_gathering = false;
+    chi->gathering_storm = false;
     
     printf("Chi system initialized - Mulan can accumulate up to %d Chi\n", chi->max_chi);
 }
@@ -181,81 +181,108 @@ bool execute_counter_attack(MulanState* mulan_state, Player* mulan_player,
 //=============================================================================
 
 // Attack cards that can be enhanced with Chi
-Card underestimate = {
-    .name = "Underestimate", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = underestimate_effect
+Card underestimated = {
+    .name = "Underestimated", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = underestimated_effect
 };
 
-Card unstoppable = {
-    .name = "Unstoppable", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = unstoppable_effect
+Card undeniable = {
+    .name = "Undeniable", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = undeniable_effect
 };
 
-Card indestructible = {
-    .name = "Indestructible", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = indestructible_effect
+Card undiminished = {
+    .name = "Undiminished", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = undiminished_effect
 };
 
 // Defense cards that enable counter attacks
-Card calm_control = {
-    .name = "Calm Control", .type = SKILL_DEF, .val = 1, .cst = 0, .dmg = 0,
-    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = calm_control_effect
+Card diverted_fire = {
+    .name = "Diverted Fire", .type = SKILL_DEF, .val = 1, .cst = 0, .dmg = 0,
+    .defense = 1, .mov = 0, .rng = 0, .link = false, .effect = diverted_fire_effect
 };
 
-Card soft_overcome_hard = {
-    .name = "Soft Overcome Hard", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = soft_overcome_hard_effect
+Card diverted_might = {
+    .name = "Diverted Might", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 0,
+    .defense = 2, .mov = 0, .rng = 0, .link = false, .effect = diverted_might_effect
 };
 
-Card weak_defeat_strong = {
-    .name = "Weak Defeat Strong", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
-    .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = weak_defeat_strong_effect
+Card diverted_wrath = {
+    .name = "Diverted Wrath", .type = SKILL_DEF, .val = 3, .cst = 4, .dmg = 0,
+    .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = diverted_wrath_effect
 };
 
 // Movement cards with aggressive repositioning
-Card never_retreat = {
-    .name = "Never Retreat", .type = SKILL_MOV, .val = 1, .cst = 1, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = never_retreat_effect
+Card no_retreat = {
+    .name = "No Retreat", .type = SKILL_MOV, .val = 1, .cst = 1, .dmg = 1,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = no_retreat_effect
+};
+
+Card no_quarter = {
+    .name = "No Quarter", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = no_quarter_effect
 };
 
 Card no_mercy = {
-    .name = "No Mercy", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 2,
+    .name = "Np Mercy", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
     .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = no_mercy_effect
 };
 
-Card never_forgive = {
-    .name = "Never Forgive", .type = SKILL_MOV, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = never_forgive_effect
-};
-
 // Twist cards that enhance Chi system
-Card energy_throughout = {
-    .name = "Energy Throughout", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card channeled_qi = {
+    .name = "Channeled Qi", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card storm_gathering = {
-    .name = "Storm Gathering", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+Card evading_fate = {
+    .name = "Evading Fate", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card enlightened_assault = {
+    .name = "Enlighted Assault", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card gathering_storm = {
+    .name = "Gathering Storm", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
 // Epic cards with massive Chi expenditure
-Card soaring_spirit = {
-    .name = "Soaring Spirit", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = soaring_spirit_effect
+Card legends_call = {
+    .name = "Legend's Call", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = legends_call_effect
 };
 
-Card face_chaos = {
-    .name = "Face Chaos", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = face_chaos_effect
+Card confronting_chaos = {
+    .name = "Confronting Chaos", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = confronting_chaos_effect
 };
 
-Card thunder_strike = {
-    .name = "Thunder Strike", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
-    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = thunder_strike_effect
+Card honors_thunder = {
+    .name = "Honor's Thunder", .type = EPIC, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 1, .link = false, .effect = honors_thunder_effect
 };
 
-Fable mulan_fable;
+Fable mulan_fable={
+    "Mulan",{255,215,0,255},34,0,3,17,
+    .skill={
+        {
+            .cards={&underestimated,&undeniable,&channeled_qi,&undiminished,&gathering_storm},
+            .cnt=5
+        },
+        {
+            .cards={&diverted_fire,&diverted_might,&evading_fate,&diverted_wrath,&gathering_storm},
+            .cnt=5
+        },
+        {
+            .cards={&no_retreat,&no_quarter,&enlightened_assault,&no_mercy,&gathering_storm},
+            .cnt=5
+        }
+    },
+    .epic={&legends_call,&confronting_chaos,&honors_thunder}
+};
 
 //=============================================================================
 // MULAN STATE MANAGEMENT
@@ -276,7 +303,7 @@ void init_mulan_state(Player* player) {
     init_chi_system(&mulan_state->chi);
     init_counter_system(&mulan_state->counter);
     
-    mulan_state->energy_throughout_active = false;
+    mulan_state->channeled_qi_active = false;
     mulan_state->consecutive_blocks = 0;
     mulan_state->damage_taken_this_turn = 0;
     
@@ -329,7 +356,7 @@ void mulan_turn_start(Player* player) {
     mulan_state->damage_taken_this_turn = 0;
     
     // Storm Gathering effect - passive Chi generation
-    if (mulan_state->chi.storm_gathering) {
+    if (mulan_state->chi.gathering_storm) {
         gain_chi(mulan_state, 1, "Storm Gathering");
     }
     
@@ -367,7 +394,7 @@ void mulan_turn_end(Player* player) {
 // These show how Chi enhances different types of actions
 //=============================================================================
 
-void underestimate_effect(void* self, void* target) {
+void underestimated_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     Player* opponent = (Player*)target;
     MulanState* mulan_state = get_mulan_state(mulan);
@@ -393,7 +420,7 @@ void underestimate_effect(void* self, void* target) {
     }
 }
 
-void calm_control_effect(void* self, void* target) {
+void diverted_fire_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     MulanState* mulan_state = get_mulan_state(mulan);
     
@@ -403,12 +430,12 @@ void calm_control_effect(void* self, void* target) {
     mulan->defense = MIN(mulan->defense + base_defense, mulan->fable->defense);
     
     // Prepare this card for counter attack
-    prepare_counter_attack(mulan_state, &calm_control);
+    prepare_counter_attack(mulan_state, &diverted_fire);
     
     printf("Calm Control: +%d defense and counter attack prepared\n", base_defense);
 }
 
-void never_retreat_effect(void* self, void* target) {
+void no_retreat_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     Player* opponent = (Player*)target;
     MulanState* mulan_state = get_mulan_state(mulan);
@@ -453,7 +480,7 @@ void never_retreat_effect(void* self, void* target) {
     printf("Never Retreat: Aggressive repositioning complete\n");
 }
 
-void soaring_spirit_effect(void* self, void* target) {
+void legends_call_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     MulanState* mulan_state = get_mulan_state(mulan);
     
@@ -466,7 +493,7 @@ void soaring_spirit_effect(void* self, void* target) {
     printf("Soaring Spirit: Mulan draws 4 additional cards!\n");
 }
 
-void face_chaos_effect(void* self, void* target) {
+void confronting_chaos_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     Player* opponent = (Player*)target;
     MulanState* mulan_state = get_mulan_state(mulan);
@@ -483,7 +510,7 @@ void face_chaos_effect(void* self, void* target) {
     printf("Face Chaos: Mulan moves adjacent and gains combat focus!\n");
 }
 
-void thunder_strike_effect(void* self, void* target) {
+void honors_thunder_effect(void* self, void* target) {
     Player* mulan = (Player*)self;
     Player* opponent = (Player*)target;
     MulanState* mulan_state = get_mulan_state(mulan);
@@ -506,49 +533,13 @@ void thunder_strike_effect(void* self, void* target) {
 // Shows how to set up complex interdependent systems
 //=============================================================================
 
-void init_mulan_fable(void) {
-    mulan_fable = (Fable){
-        .name = "Mulan",
-        .Piece = {255, 215, 0, 255}, // Golden for honor and courage
-        .health = 34,
-        .energy = 0, // Mulan uses Chi instead of energy
-        .defense = 3, // Lower base defense, relies on reactive defense
-        .epic_threshold = 17,
-        .lane = 0
-    };
-    
-    // Set up skill decks emphasizing counter-attack synergy
-    mulan_fable.skill[0] = (Deck){ // Attack skills
-        .cards = {&underestimate, &unstoppable, &unstoppable, &indestructible, &indestructible},
-        .cnt = 5
-    };
-    
-    mulan_fable.skill[1] = (Deck){ // Defense skills - core of counter system
-        .cards = {&calm_control, &soft_overcome_hard, &soft_overcome_hard, 
-                 &weak_defeat_strong, &weak_defeat_strong},
-        .cnt = 5
-    };
-    
-    mulan_fable.skill[2] = (Deck){ // Movement skills with aggression
-        .cards = {&never_retreat, &no_mercy, &no_mercy, &never_forgive, &never_forgive},
-        .cnt = 5
-    };
-    
-    // Epic cards that use Chi in powerful ways
-    mulan_fable.epic[0] = soaring_spirit;
-    mulan_fable.epic[1] = face_chaos;
-    mulan_fable.epic[2] = thunder_strike;
-}
-
 void setup_mulan_player(Player* player) {
     if (!player) return;
     
-    init_mulan_fable();
     player->fable = &mulan_fable;
     player->health = mulan_fable.health;
     player->power = 0;
     player->defense = 0;
-    player->pos = mulan_fable.lane;
     
     // Initialize Mulan's reactive systems
     init_mulan_state(player);
@@ -561,9 +552,9 @@ void setup_mulan_player(Player* player) {
     }
     
     // Add starting skills - focus on counter attack capability
-    add_deck(&player->draw, &underestimate);
-    add_deck(&player->draw, &calm_control);
-    add_deck(&player->draw, &never_retreat);
+    add_deck(&player->draw, &underestimated);
+    add_deck(&player->draw, &diverted_fire);
+    add_deck(&player->draw, &no_retreat);
     
     shuffle_deck(&player->draw);
     draw_hand(player, HAND_SIZE);
