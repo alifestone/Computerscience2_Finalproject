@@ -5,11 +5,11 @@
 #include "cards.h"
 
 extern Fable alice_fable;
-extern Fable mulan;
+extern Fable mulan_fable;
 extern Fable match_girl_enhanced_fable;
-extern Fable red_hood;
+extern Fable red_hood_fable;
 extern Fable kaguya_fable;
-extern Fable snow_white;
+extern Fable snow_white_fable;
 
 // 引用 alice.c 中的卡牌
 extern Card deal_the_cards;
