@@ -276,6 +276,7 @@ void change_game_state(GameState new_state) {
             g_ctx->current_player = rand() % 2;
             g_ctx->turn_number = 1;
             printf("Battle initialized, starting player: %d\n", g_ctx->current_player);
+            change_game_state(GAME_STATE_TURN_START);
             break;
             
         case GAME_STATE_TURN_START:
@@ -641,7 +642,7 @@ void TitleScreen(SDL_Renderer *ren){
 }
 
 
-/*void CharacterSelection(SDL_Renderer *ren,Player *p1,Player *p2){
+void CharacterSelection(SDL_Renderer *ren,Player *p1,Player *p2){
     init_game_context(ren);
     g_ctx->players[0]=p1;
     g_ctx->players[1]=p2;
@@ -712,7 +713,7 @@ void TitleScreen(SDL_Renderer *ren){
         SDL_RenderPresent(ren);
         SDL_Delay(15);
     }
-}*/
+}
 
 //=============================================================================
 // ENHANCED BATTLE SCREEN WITH IMPROVED STATE MANAGEMENT
@@ -1108,6 +1109,7 @@ int main() {
         
         // Determine starting player
         int starting_player = (rand() % 2) + 1;
+        CharacterSelection(ren,&p1,&p2);
         enhanced_battle_setup(&p1, &p2, starting_player);
         
         EnhancedBattleScreen(ren, &p1, &p2);
