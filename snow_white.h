@@ -9,7 +9,7 @@
 // =============================================================================
 // 函數聲明區域
 // =============================================================================
-
+extern Fable snow_white_fable;
 /**
  * 初始化白雪公主角色的設置函數
  * 這個函數會設置玩家的角色為白雪公主，建立起始牌組，並進行初始化
@@ -58,7 +58,7 @@ int count_poison_in_discard(Player *player);
  * 白雪公主角色定義
  * 包含角色的基本屬性：生命值、防禦上限、必殺閾值等
  */
-extern Fable snow_white;
+extern Fable snow_white_fable;
 
 // =============================================================================
 // 中毒牌庫系統
@@ -86,19 +86,19 @@ extern Deck poison_deck;
  * 等級一攻擊技能：水晶碎片
  * 射程1 傷害1+O，將對手牌庫頂1張牌棄入棄牌堆
  */
-extern Card crystal_fragment;
+extern Card shard_storm;
 
 /**
  * 等級二攻擊技能：水晶漩渦  
  * 射程1 傷害2+O，將對手牌庫頂2張牌棄入棄牌堆
  */
-extern Card crystal_vortex;
+extern Card shard_tempest;
 
 /**
  * 等級三攻擊技能：水晶風暴
  * 射程1 傷害3+O，將對手牌庫頂3張牌棄入棄牌堆
  */
-extern Card crystal_storm;
+extern Card shard_vortex;
 
 // =============================================================================
 // 攻擊系統蛻變牌
@@ -116,7 +116,7 @@ extern Card crystal_coffin;
  * 當一張中毒牌進入對手的棄牌堆時，他額外失去1點生命
  * 此蛻變牌可以累積
  */
-extern Card pure_poison;
+extern Card poisoned_purity;
 
 // =============================================================================
 // 防禦技能卡聲明區域
@@ -126,7 +126,7 @@ extern Card pure_poison;
  * 等級一防禦技能：玷污的恩惠
  * 射程1 傷害1，將中毒牌庫頂部至多O張牌放入對手的棄牌堆中
  */
-extern Card tainted_blessing;
+extern Card tainted_offering;
 
 /**
  * 等級二防禦技能：玷污的盛筵
@@ -138,7 +138,7 @@ extern Card tainted_feast;
  * 等級三防禦技能：玷污的狂歡
  * 射程1 傷害3，將中毒牌庫頂部至多O張牌放入對手的棄牌堆中
  */
-extern Card tainted_carnival;
+extern Card tainted_maelstrom;
 
 // =============================================================================
 // 防禦系統蛻變牌
@@ -149,7 +149,7 @@ extern Card tainted_carnival;
  * 當你要透過一個防禦技能將中毒牌放入對手的棄牌堆時，
  * 可以選擇將其中1張中毒牌洗入他的牌庫來代替放入棄牌堆
  */
-extern Card fallen_calamity;
+extern Card corrupted_destiny;
 
 // =============================================================================
 // 移動技能卡聲明區域
@@ -159,19 +159,19 @@ extern Card fallen_calamity;
  * 等級一移動技能：破碎的幻想
  * 射程O 傷害1，將你放置到與對手相鄰的格子
  */
-extern Card broken_fantasy;
+extern Card shattered_passage;
 
 /**
  * 等級二移動技能：破碎的現實
  * 射程1+O 傷害2，將你放置到與對手相鄰的格子
  */
-extern Card broken_reality;
+extern Card shattered_truth;
 
 /**
  * 等級三移動技能：破碎的命運
  * 射程2+O 傷害3，將你放置到與對手相鄰的格子
  */
-extern Card broken_destiny;
+extern Card shattered_destiny;
 
 // =============================================================================
 // 移動系統蛻變牌
@@ -182,7 +182,7 @@ extern Card broken_destiny;
  * 當你透過一個移動行動穿過對手時，或是對手透過一個移動行動穿過你時，
  * 可以將中毒牌庫頂部一張牌放入他的棄牌堆
  */
-extern Card toxic_erosion;
+extern Card venomous_turn;
 
 // =============================================================================
 // 必殺技聲明區域
@@ -192,19 +192,19 @@ extern Card toxic_erosion;
  * 必殺技：七蛇之怒
  * 射程1 對手失去X點生命，X等於他棄牌堆中中毒牌的數量
  */
-extern Card seven_serpent_rage;
+extern Card seven_serpents;
 
 /**
  * 必殺技：魔鏡之雨
  * 射程1 傷害3，對手必須棄掉他的全部手牌之後抽取4張牌
  */
-extern Card mirror_rain;
+extern Card rain_of_mirrors;
 
 /**
  * 必殺技：醞釀之災
  * 射程3 傷害3，你可以選擇將對手棄牌堆中至多3張牌洗入他的牌庫
  */
-extern Card brewing_disaster;
+extern Card brewing_destruction;
 
 // =============================================================================
 // 注意：基礎卡牌（Attack1, Defense1, Move1 等）的聲明
