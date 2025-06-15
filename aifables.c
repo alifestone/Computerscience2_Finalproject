@@ -12,19 +12,19 @@ extern Fable kaguya_fable;
 extern Fable snow_white;
 
 // 引用 alice.c 中的卡牌
-extern Card open_game;
-extern Card twist_game;
-extern Card control_game;
+extern Card opening_game;
+extern Card twisting_game;
+extern Card controliing_game;
 extern Card magic_trick;
-extern Card mental_magic;
+extern Card mental_illusion;
 extern Card hat_trick;
 extern Card strange_agility;
 extern Card strange_stealth;
-extern Card strange_strangeness;
-extern Card off_with_her_head;
-extern Card start_my_show;
-extern Card wonderland_comes;
-extern Card we_are_all_mad;
+extern Card strange_weird;
+extern Card off_with_head;
+extern Card start_performance;
+extern Card wonderland_descent;
+extern Card ware_mad_here;
 extern Card endless_party;
 extern Card wonderful_day;
 extern Card game_control;
@@ -136,26 +136,37 @@ void ai_alice_turn(Player *self, Player *enemy, FableShop *shop) {
 }
 
 //red hood
-extern Card potshot;
-extern Card crackshot;
-extern Card overdrive_burn;
-extern Card sniper_shot;
-extern Card onboard_cache;
-extern Card unleashed_firepower;
-extern Card transformed_senses;
-extern Card unleashed_fury;
-extern Card energy_shield;
+extern Card pot_shot_enhanced;
+extern Card crack_shot_enhanced;
+extern Card overdrive_burn_enhanced;
+extern Card sniper_shot_enhanced;
+extern Card onboard_cache_enhanced;
+extern Card unleashed_firepower_enhanced;
+// extern Card transformed_senses;
+extern Card unleashed_fury_enhanced;
+extern Card energy_shield_enhanced;
+extern Card electrified_shield_enhanced;
+extern Card omega_shield_enhanced;
+extern Card unleashed_ballistics_enhanced;
+extern Card hungry_wolf_devour;
+extern Card system_intrusion;
+extern Card revenge_rain;
 
 Card *redhood_deck[] = {
-    &potshot,
-    &crackshot,
-    &overdrive_burn,
-    &sniper_shot,
-    &onboard_cache,
-    &unleashed_firepower,
-    &transformed_senses,
-    &unleashed_fury,
-    &energy_shield
+    &pot_shot_enhanced,
+    &crack_shot_enhanced,
+    &overdrive_burn_enhanced,
+    &sniper_shot_enhanced,
+    &onboard_cache_enhanced,
+    &unleashed_firepower_enhanced,
+    &unleashed_fury_enhanced,
+    &energy_shield_enhanced,
+    &electrified_shield_enhanced,
+    &omega_shield_enhanced,
+    &unleashed_ballistics_enhanced,
+    &hungry_wolf_devour,
+    &system_intrusion,
+    &revenge_rain
 };
 int redhood_deck_size = sizeof(redhood_deck) / sizeof(Card*);
 Card* redhood_choose_card(Player *self, Player *enemy) {
@@ -227,24 +238,24 @@ void ai_redhood_turn(Player *self, Player *enemy, FableShop *shop) {
 }
 
 //mulan
-extern Card burongxiaoqu;        // 不容小覷 (等級一)
-extern Card shibukedang;         // 勢不可擋 (等級二)
-extern Card jianbukecu;          // 堅不可摧 (等級三)
-extern Card qiguanquanshen;      // 氣慣全身 (蛻變1)
-extern Card baofengqianxi_atk;   // 暴風前夕 (蛻變2) - 攻擊版
-extern Card yijingzhidong;       // 以靜制動 (等級一)
-extern Card yiroukegang;         // 以柔克剛 (等級二)
-extern Card yiruoshengqiang;     // 以弱勝強 (等級三)
-extern Card zhuzaimingyun;       // 主宰命運 (蛻變1)
-extern Card baofengqianxi_def;   // 暴風前夕 (蛻變2) - 防禦版
-extern Card yongbutuisuo;        // 永不退縮 (等級一)
-extern Card haobuliuqing;        // 毫不留情 (等級二)
-extern Card jueburao恕;          // 絕不饒恕 (等級三)
-extern Card changquzhiru;        // 長驅直入 (蛻變1)
-extern Card baofengqianxi_mov;   // 暴風前夕 (蛻變2) - 移動版
-extern Card qichongyunxiao;      // 氣沖雲霄
-extern Card zhimianhuandun;      // 直面混沌
-extern Card leitingyiji;         // 雷霆一擊
+extern Card underestimate;        // 不容小覷 (等級一)
+extern Card unstoppable ;         // 勢不可擋 (等級二)
+extern Card indestructible;          // 堅不可摧 (等級三)
+extern Card calm_control;      // 氣慣全身 (蛻變1)
+extern Card soft_overcome_hard;   // 暴風前夕 (蛻變2) - 攻擊版
+extern Card weak_defeat_strong;       // 以靜制動 (等級一)
+extern Card never_retreat;         // 以柔克剛 (等級二)
+extern Card no_mercy;     // 以弱勝強 (等級三)
+extern Card never_forgive;       // 主宰命運 (蛻變1)
+extern Card energy_throughout;   // 暴風前夕 (蛻變2) - 防禦版
+extern Card storm_gathering;        // 永不退縮 (等級一)
+extern Card face_chaos;        // 毫不留情 (等級二)
+extern Card thunder_strike;          // 絕不饒恕 (等級三)
+extern Card soaring_spirit;        // 長驅直入 (蛻變1)
+// extern Card baofengqianxi_mov;   // 暴風前夕 (蛻變2) - 移動版
+// extern Card qichongyunxiao;      // 氣沖雲霄
+// extern Card zhimianhuandun;      // 直面混沌
+// extern Card leitingyiji;         // 雷霆一擊
 
 Card *mulan_deck[] = {
     &burongxiaoqu,        // 不容小覷 (等級一)
@@ -339,22 +350,23 @@ extern Card poison1;        // 1級中毒牌
 extern Card poison2;        // 2級中毒牌  
 extern Card poison3;        // 3級中毒牌
 extern Deck poison_deck;
-extern Card crystal_fragment;
-extern Card crystal_vortex;
-extern Card crystal_storm;
-extern Card crystal_coffin;
-extern Card pure_poison;
-extern Card tainted_blessing;
-extern Card tainted_feast;
-extern Card tainted_carnival;
-extern Card fallen_calamity;
-extern Card broken_fantasy;
-extern Card broken_reality;
-extern Card broken_destiny;
-extern Card toxic_erosion;
-extern Card seven_serpent_rage;
-extern Card mirror_rain;
-extern Card brewing_disaster;
+extern Card crystal_fragment;//
+extern Card crystal_vortex;//
+extern Card crystal_storm;//
+extern Card crystal_coffin;//
+extern Card pure_poison;//
+extern Card tainted_blessing;//
+extern Card tainted_feast;//
+extern Card tainted_revelry;//
+// extern Card fallen_calamity;
+extern Card broken_fantasy;//
+extern Card broken_reality;//
+extern Card broken_destiny;//
+// extern Card toxic_erosion;
+extern Card seven_serpent_rage;//
+extern Card mirror_rain;//
+extern Card brewing_disaster;//
+extern Card corrupted_banquet
 
 Card *snow_deck[] = {
     &poison1,        // 1級中毒牌
@@ -453,22 +465,23 @@ void ai_snowwhite_turn(Player *self, Player *enemy, FableShop *shop) {
 }
 
 //kaguya
-extern Card enlightened_glow;       // 領悟的光芒
-extern Card enlightened_glory;      // 領悟的榮耀  
-extern Card enlightened_avatar;     // 領悟的化身
-extern Card disciplinary_moment;    // 懲戒時刻 (蛻變1
-extern Card confused_echo;          // 困惑的回聲
-extern Card distant_echo;           // 久遠的回響
-extern Card divine_summon;          // 神性的召換
-extern Card blood_moonlight;        // 血色月光 (蛻變1)
-extern Card focused_introspection;  // 專注的自省
-extern Card enlightened_resolve;    // 頓悟的決心
-extern Card painful_purification;   // 痛徹的淨化
+extern Card enlightenment_light;       // 
+extern Card enlightenment_glory;      //  
+extern Card enlightenment_avatar;     // 
+extern Card punishment_moment;    // 懲戒時刻 (蛻變1
+extern Card confusing_echo;          // 
+extern Card ancient_resonance;           // 久遠的回響
+extern Card divine_summon;          // 
+extern Card blood_moon;        // 
+extern Card focused_introspection;  // 
+extern Card enlightened_resolve;    // 
+extern Card painful_purification;   // 
 extern Card spiritual_instinct;     // 靈性本能 (蛻變1)
-extern Card moonlight_meditation;   // 月下沉思 (蛻變2)
-extern Card blazing_bamboo_sword;   // 炙熱的竹刀
-extern Card destined_judgment;      // 注定的審判
-extern Card restless_bloodlust;     // 躁動的血性
+extern Card moonlight_contemplation;   //
+extern Card scorching_bamboo;   // 
+extern Card destined_judgment;      // 
+extern Card restless_blood;     // 
+extern Card master_destiny;
 
 Card *kaguya_deck[] = {
     &enlightened_glow,      // 領悟的光芒
