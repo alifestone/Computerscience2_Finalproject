@@ -213,6 +213,16 @@ Card overdrive_burn_enhanced = {
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
+Card hooded_system_enhanced = {
+    .name = "Hooded System", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
+Card transformed_senses_enhanced = {
+    .name = "Transformed Senses", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
+    .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
+};
+
 Card onboard_cache_enhanced = {
     .name = "Onboard Cache", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
@@ -234,7 +244,29 @@ Card revenge_rain = {
     .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = revenge_rain_effect
 };
 
-Fable red_hood_enhanced_fable;
+Fable red_hood_enhanced_fable={
+    .name="Red Riding Hood",
+    .Piece=(SDL_Color){255,0,0,255},
+    .health=30,
+    .energy=25,
+    .defense=6,
+    .epic_threshold=15,
+    .skill={
+        {
+            .cards={&pot_shot_enhanced,&crack_shot_enhanced,&overdrive_burn,&sniper_shot_enhanced,&onboard_cache_enhanced},
+            .cnt=5
+        },
+        {
+            .cards={&energy_shield_enhanced,&electrified_shield_enhanced,&hooded_system_enhanced,&omega_shield_enhanced,&onboard_cache_enhanced},
+            .cnt=5,
+        },
+        {
+            .cards={&unleashed_ballistics_enhanced,&unleashed_firepower_enhanced,&transformed_senses_enhanced,&unleashed_fury_enhanced,&onboard_cache_enhanced},
+            .cnt=5,
+        }
+    },
+    .epic={&hungry_wolf_devour,&system_intrusion,&revenge_rain}
+};
 
 //=============================================================================
 // RED HOOD STATE MANAGEMENT
@@ -473,51 +505,13 @@ void revenge_rain_effect(void* self, void* target) {
 // Shows clean setup of a straightforward but effective character
 //=============================================================================
 
-void init_red_hood_enhanced_fable(void) {
-    red_hood_enhanced_fable = (Fable){
-        .name = "Red Hood",
-        .Piece = {255, 0, 0, 255}, // Classic red
-        .health = 30,
-        .energy = 25, // Uses energy for tech systems
-        .defense = 6,
-        .epic_threshold = 15,
-        .lane = 0
-    };
-    
-    // Set up skill decks emphasizing range and tech
-    red_hood_enhanced_fable.skill[0] = (Deck){ // Attack skills with range scaling
-        .cards = {&pot_shot_enhanced, &crack_shot_enhanced, &crack_shot_enhanced,
-                 &sniper_shot_enhanced, &sniper_shot_enhanced},
-        .cnt = 5
-    };
-    
-    red_hood_enhanced_fable.skill[1] = (Deck){ // Defense skills with tech integration
-        .cards = {&energy_shield_enhanced, &electrified_shield_enhanced, 
-                 &electrified_shield_enhanced, &omega_shield_enhanced, &omega_shield_enhanced},
-        .cnt = 5
-    };
-    
-    red_hood_enhanced_fable.skill[2] = (Deck){ // Movement skills with tactical bonuses
-        .cards = {&unleashed_ballistics_enhanced, &unleashed_firepower_enhanced, 
-                 &unleashed_firepower_enhanced, &unleashed_fury_enhanced, &unleashed_fury_enhanced},
-        .cnt = 5
-    };
-    
-    // Epic cards with powerful range effects
-    red_hood_enhanced_fable.epic[0] = hungry_wolf_devour;
-    red_hood_enhanced_fable.epic[1] = system_intrusion;
-    red_hood_enhanced_fable.epic[2] = revenge_rain;
-}
-
 void setup_red_hood_enhanced_player(Player* player) {
     if (!player) return;
     
-    init_red_hood_enhanced_fable();
     player->fable = &red_hood_enhanced_fable;
     player->health = red_hood_enhanced_fable.health;
     player->power = 0;
     player->defense = 0;
-    player->pos = red_hood_enhanced_fable.lane;
     
     // Initialize Red Hood's tech systems
     init_red_hood_state(player);
