@@ -42,15 +42,15 @@ typedef struct RedHoodState {
 } RedHoodState;
 
 // Forward declarations for enhanced Red Hood effects
-void pot_shot_enhanced_effect(void* self, void* target);
-void crack_shot_enhanced_effect(void* self, void* target);
-void sniper_shot_enhanced_effect(void* self, void* target);
-void energy_shield_enhanced_effect(void* self, void* target);
-void electrified_shield_enhanced_effect(void* self, void* target);
-void omega_shield_enhanced_effect(void* self, void* target);
-void unleashed_ballistics_enhanced_effect(void* self, void* target);
-void unleashed_firepower_enhanced_effect(void* self, void* target);
-void unleashed_fury_enhanced_effect(void* self, void* target);
+void pot_shot_effect(void* self, void* target);
+void crack_shot_effect(void* self, void* target);
+void sniper_shot_effect(void* self, void* target);
+void energy_shield_effect(void* self, void* target);
+void electrified_shield_effect(void* self, void* target);
+void omega_shield_effect(void* self, void* target);
+void unleashed_ballistics_effect(void* self, void* target);
+void unleashed_firepower_effect(void* self, void* target);
+void unleashed_fury_effect(void* self, void* target);
 
 // Epic effects
 void hungry_wolf_devour_effect(void* self, void* target);
@@ -160,70 +160,70 @@ bool can_hit_target(Player* red_hood, Player* target, RedHoodState* rh_state, in
 //=============================================================================
 
 // Attack cards with range focus
-Card pot_shot_enhanced = {
+Card pot_shot = {
     .name = "Pot Shot", .type = SKILL_ATK, .val = 1, .cst = 0, .dmg = 1,
-    .defense = 0, .mov = 0, .rng = 1, .link = true, .effect = pot_shot_enhanced_effect
+    .defense = 0, .mov = 0, .rng = 1, .link = true, .effect = pot_shot_effect
 };
 
-Card crack_shot_enhanced = {
+Card crack_shot = {
     .name = "Crack Shot", .type = SKILL_ATK, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 0, .mov = 0, .rng = 2, .link = true, .effect = crack_shot_enhanced_effect
+    .defense = 0, .mov = 0, .rng = 2, .link = true, .effect = crack_shot_effect
 };
 
-Card sniper_shot_enhanced = {
+Card sniper_shot = {
     .name = "Sniper Shot", .type = SKILL_ATK, .val = 3, .cst = 4, .dmg = 3,
-    .defense = 0, .mov = 0, .rng = 3, .link = true, .effect = sniper_shot_enhanced_effect
+    .defense = 0, .mov = 0, .rng = 3, .link = true, .effect = sniper_shot_effect
 };
 
 // Defense cards with tech integration
-Card energy_shield_enhanced = {
+Card energy_shield = {
     .name = "Energy Shield", .type = SKILL_DEF, .val = 1, .cst = 1, .dmg = 1,
-    .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = energy_shield_enhanced_effect
+    .defense = 3, .mov = 0, .rng = 0, .link = false, .effect = energy_shield_effect
 };
 
-Card electrified_shield_enhanced = {
+Card electrified_shield = {
     .name = "Electrified Shield", .type = SKILL_DEF, .val = 2, .cst = 2, .dmg = 2,
-    .defense = 4, .mov = 0, .rng = 0, .link = false, .effect = electrified_shield_enhanced_effect
+    .defense = 4, .mov = 0, .rng = 0, .link = false, .effect = electrified_shield_effect
 };
 
-Card omega_shield_enhanced = {
+Card omega_shield = {
     .name = "Omega Shield", .type = SKILL_DEF, .val = 3, .cst = 3, .dmg = 3,
-    .defense = 6, .mov = 0, .rng = 0, .link = false, .effect = omega_shield_enhanced_effect
+    .defense = 6, .mov = 0, .rng = 0, .link = false, .effect = omega_shield_effect
 };
 
 // Movement cards with tactical positioning
-Card unleashed_ballistics_enhanced = {
+Card unleashed_ballistics = {
     .name = "Unleashed Ballistics", .type = SKILL_MOV, .val = 1, .cst = 1, .dmg = 0,
-    .defense = 0, .mov = 2, .rng = 0, .link = false, .effect = unleashed_ballistics_enhanced_effect
+    .defense = 0, .mov = 2, .rng = 0, .link = false, .effect = unleashed_ballistics_effect
 };
 
-Card unleashed_firepower_enhanced = {
+Card unleashed_firepower = {
     .name = "Unleashed Firepower", .type = SKILL_MOV, .val = 2, .cst = 2, .dmg = 0,
-    .defense = 0, .mov = 3, .rng = 0, .link = false, .effect = unleashed_firepower_enhanced_effect
+    .defense = 0, .mov = 3, .rng = 0, .link = false, .effect = unleashed_firepower_effect
 };
 
-Card unleashed_fury_enhanced = {
+Card unleashed_fury = {
     .name = "Unleashed Fury", .type = SKILL_MOV, .val = 3, .cst = 3, .dmg = 0,
-    .defense = 0, .mov = 4, .rng = 0, .link = false, .effect = unleashed_fury_enhanced_effect
+    .defense = 0, .mov = 4, .rng = 0, .link = false, .effect = unleashed_fury_effect
 };
 
 // Special tech cards
-Card overdrive_burn_enhanced = {
+Card overdrive_burn = {
     .name = "Overdrive Burn", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card hooded_system_enhanced = {
+Card hooded_system = {
     .name = "Hooded System", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card transformed_senses_enhanced = {
+Card transformed_senses = {
     .name = "Transformed Senses", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
 
-Card onboard_cache_enhanced = {
+Card onboard_cache = {
     .name = "Onboard Cache", .type = TWIST, .val = 0, .cst = 0, .dmg = 0,
     .defense = 0, .mov = 0, .rng = 0, .link = false, .effect = NULL
 };
@@ -244,7 +244,7 @@ Card revenge_rain = {
     .defense = 0, .mov = 0, .rng = 3, .link = false, .effect = revenge_rain_effect
 };
 
-Fable red_hood_enhanced_fable={
+Fable red_hood_fable={
     .name="Red Riding Hood",
     .Piece=(SDL_Color){255,0,0,255},
     .health=30,
@@ -253,15 +253,15 @@ Fable red_hood_enhanced_fable={
     .epic_threshold=15,
     .skill={
         {
-            .cards={&pot_shot_enhanced,&crack_shot_enhanced,&overdrive_burn,&sniper_shot_enhanced,&onboard_cache_enhanced},
+            .cards={&pot_shot,&crack_shot,&overdrive_burn,&sniper_shot,&onboard_cache},
             .cnt=5
         },
         {
-            .cards={&energy_shield_enhanced,&electrified_shield_enhanced,&hooded_system_enhanced,&omega_shield_enhanced,&onboard_cache_enhanced},
+            .cards={&energy_shield,&electrified_shield,&hooded_system,&omega_shield,&onboard_cache},
             .cnt=5,
         },
         {
-            .cards={&unleashed_ballistics_enhanced,&unleashed_firepower_enhanced,&transformed_senses_enhanced,&unleashed_fury_enhanced,&onboard_cache_enhanced},
+            .cards={&unleashed_ballistics,&unleashed_firepower,&transformed_senses,&unleashed_fury,&onboard_cache},
             .cnt=5,
         }
     },
@@ -337,7 +337,7 @@ void red_hood_turn_end(Player* player) {
 // These demonstrate clean, effective ability design
 //=============================================================================
 
-void pot_shot_enhanced_effect(void* self, void* target) {
+void pot_shot_effect(void* self, void* target) {
     Player* red_hood = (Player*)self;
     Player* opponent = (Player*)target;
     RedHoodState* rh_state = get_red_hood_state(red_hood);
@@ -357,7 +357,7 @@ void pot_shot_enhanced_effect(void* self, void* target) {
     }
 }
 
-void crack_shot_enhanced_effect(void* self, void* target) {
+void crack_shot_effect(void* self, void* target) {
     Player* red_hood = (Player*)self;
     Player* opponent = (Player*)target;
     RedHoodState* rh_state = get_red_hood_state(red_hood);
@@ -377,7 +377,7 @@ void crack_shot_enhanced_effect(void* self, void* target) {
     }
 }
 
-void sniper_shot_enhanced_effect(void* self, void* target) {
+void sniper_shot_effect(void* self, void* target) {
     Player* red_hood = (Player*)self;
     Player* opponent = (Player*)target;
     RedHoodState* rh_state = get_red_hood_state(red_hood);
@@ -400,7 +400,7 @@ void sniper_shot_enhanced_effect(void* self, void* target) {
     }
 }
 
-void energy_shield_enhanced_effect(void* self, void* target) {
+void energy_shield_effect(void* self, void* target) {
     Player* red_hood = (Player*)self;
     RedHoodState* rh_state = get_red_hood_state(red_hood);
     
@@ -419,7 +419,7 @@ void energy_shield_enhanced_effect(void* self, void* target) {
     // In full implementation, would add to effect system
 }
 
-void unleashed_ballistics_enhanced_effect(void* self, void* target) {
+void unleashed_ballistics_effect(void* self, void* target) {
     Player* red_hood = (Player*)self;
     RedHoodState* rh_state = get_red_hood_state(red_hood);
     
@@ -505,11 +505,11 @@ void revenge_rain_effect(void* self, void* target) {
 // Shows clean setup of a straightforward but effective character
 //=============================================================================
 
-void setup_red_hood_enhanced_player(Player* player) {
+void setup_red_hood_player(Player* player) {
     if (!player) return;
     
-    player->fable = &red_hood_enhanced_fable;
-    player->health = red_hood_enhanced_fable.health;
+    player->fable = &red_hood_fable;
+    player->health = red_hood_fable.health;
     player->power = 0;
     player->defense = 0;
     
@@ -524,9 +524,9 @@ void setup_red_hood_enhanced_player(Player* player) {
     }
     
     // Add starting skills for immediate impact
-    add_deck(&player->draw, &pot_shot_enhanced);
-    add_deck(&player->draw, &energy_shield_enhanced);
-    add_deck(&player->draw, &unleashed_ballistics_enhanced);
+    add_deck(&player->draw, &pot_shot);
+    add_deck(&player->draw, &energy_shield);
+    add_deck(&player->draw, &unleashed_ballistics);
     
     shuffle_deck(&player->draw);
     draw_hand(player, HAND_SIZE);
