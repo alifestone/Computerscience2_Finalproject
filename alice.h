@@ -28,7 +28,6 @@ extern AliceGameState alice_state;
 extern Fable alice_fable;
 
 // 初始化函數
-void init_alice_fable(void);
 void init_alice_state(Player *p);
 
 // 身份管理函數
@@ -40,52 +39,52 @@ int alice_get_defense_modifier(void);
 int alice_get_movement_modifier(void);
 
 // 效果函數宣告
-void open_game_effect(void *self, void *target);
-void twist_game_effect(void *self, void *target);
-void control_game_effect(void *self, void *target);
+void deal_the_cards_effect(void *self, void *target);
+void cut_the_cards_effect(void *self, void *target);
+void rig_the_cards_effect(void *self, void *target);
 void magic_trick_effect(void *self, void *target);
-void mental_magic_effect(void *self, void *target);
+void mind_trick_effect(void *self, void *target);
 void hat_trick_effect(void *self, void *target);
-void strange_agility_effect(void *self, void *target);
-void strange_stealth_effect(void *self, void *target);
-void strange_strangeness_effect(void *self, void *target);
+void curiously_agile_effect(void *self, void *target);
+void curiously_covert_effect(void *self, void *target);
+void curiously_curious_effect(void *self, void *target);
 
 // 蛻變效果函數
 void off_with_her_head_effect(void *self, void *target);
-void start_my_show_effect(void *self, void *target);
-void wonderland_comes_effect(void *self, void *target);
-void we_are_all_mad_effect(void *self, void *target);
+void its_showtime_effect(void *self, void *target);
+void wonderland_effect(void *self, void *target);
+void were_all_mad_effect(void *self, void *target);
 
 // 必殺技效果函數
-void endless_party_effect(void *self, void *target);
-void wonderful_day_effect(void *self, void *target);
-void game_control_effect(void *self, void *target);
+void important_date_effect(void *self, void *target);
+void frabjous_day_effect(void *self, void *target);
+void the_games_afoot_effect(void *self, void *target);
 
 // -------------------------------------
 // 攻擊卡
-extern Card open_game;
-extern Card twist_game;
-extern Card control_game;
+extern Card deal_the_cards;
+extern Card cut_the_cards;
+extern Card rig_the_cards;
 
 // 防禦卡
 extern Card magic_trick;
-extern Card mental_magic;
+extern Card mind_trick;
 extern Card hat_trick;
 
 // 移動卡
-extern Card strange_agility;
-extern Card strange_stealth;
-extern Card strange_strangeness;
+extern Card curiously_agile;
+extern Card curiously_covert;
+extern Card curiously_curious;
 
 // TWIST 蛻變卡
 extern Card off_with_her_head;
-extern Card start_my_show;
-extern Card wonderland_comes;
-extern Card we_are_all_mad;
+extern Card its_showtime;
+extern Card wonderland;
+extern Card were_all_mad;
 
 // EPIC 必殺卡
-extern Card endless_party;
-extern Card wonderful_day;
-extern Card game_control;
+extern Card important_date;
+extern Card frabjous_day;
+extern Card the_games_afoot;
 
 #endif
