@@ -55,7 +55,6 @@ typedef struct {
 extern Fable match_girl_enhanced_fable;
 
 // Initialization functions
-void init_enhanced_match_girl_fable(void);
 void init_enhanced_match_girl_state(Player *player);
 void setup_enhanced_match_girl_player(Player *player);
 void init_enhanced_fire_supply(void);
@@ -72,45 +71,43 @@ bool match_girl_can_enhance_with_energy(Player *player, int energy_cost);
 void check_match_girl_energy_gain(Card *card_used, Player *card_user);
 
 // Card effect function declarations
-void phantom_wish_enhanced_effect(void *self, void *target);
-void secret_desire_enhanced_effect(void *self, void *target);
-void endless_luxury_enhanced_effect(void *self, void *target);
-void devil_sacrifice_enhanced_effect(void *self, void *target);
-void devil_bet_enhanced_effect(void *self, void *target);
-void devil_contract_enhanced_effect(void *self, void *target);
-void weightless_soul_enhanced_effect(void *self, void *target);
-void indebted_soul_enhanced_effect(void *self, void *target);
-void broken_soul_enhanced_effect(void *self, void *target);
-void hell_flame_enhanced_effect(void *self, void *target);
-void doomfall_enhanced_effect(void *self, void *target);
-void curse_of_greed_enhanced_effect(void *self, void *target);
+void make_a_wish_effect(void *self, void *target);
+void regret_a_wish_effect(void *self, void *target);
+void requite_a_wish_effect(void *self, void *target);
+void diabolical_offer_effect(void *self, void *target);
+void diabolical_gamble_effect(void *self, void *target);
+void diabolical_deal_effect(void *self, void *target);
+void your_soul_weighed_effect(void *self, void *target);
+void your_soul_wanting_effect(void *self, void *target);
+void your_soul_ravaged_effect(void *self, void *target);
+void inferno_overload_effect(void *self, void *target);
+void the_demons_due_effect(void *self, void *target);
+void a_surfeit_of_wishes_effect(void *self, void *target);
 
 // Attack cards
-extern Card phantom_wish_enhanced;    // Phantom Wish
-extern Card secret_desire_enhanced;   // Secret Desire
-extern Card endless_luxury_enhanced;  // Endless Luxury
+extern Card make_a_wish;    // Phantom Wish
+extern Card regret_a_wish;   // Secret Desire
+extern Card requite_a_wish;  // Endless Luxury
 
 // Defense cards
-extern Card devil_sacrifice_enhanced; // Devil's Sacrifice
-extern Card devil_bet_enhanced;       // Devil's Bet
-extern Card devil_contract_enhanced;  // Devil's Contract
+extern Card diabolical_offer; // Devil's Sacrifice
+extern Card diabolical_gamble;       // Devil's Bet
+extern Card diabolical_deal;  // Devil's Contract
 
 // Movement cards
-extern Card weightless_soul_enhanced; // Weightless Soul
-extern Card indebted_soul_enhanced;   // Indebted Soul
-extern Card broken_soul_enhanced;     // Broken Soul
+extern Card your_soul_weighed; // Weightless Soul
+extern Card your_soul_wanting;   // Indebted Soul
+extern Card your_soul_ravaged;     // Broken Soul
 
 // Twist cards
 extern Card ritual_of_pain;           // Ritual of Pain
-extern Card flame_trick;              // Flame Trick
-extern Card torment_of_fate;          // Torment of Fate
-extern Card indulgent_desire;         // Indulgent Desire
-extern Card devil_gaze;               // Devil Gaze
-extern Card desire_trick;             // Desire Trick
+extern Card inflamed_craving;              // Flame Trick
+extern Card after_all_ive_given;          // Torment of Fate
+extern Card playing_with_fire;         // Indulgent Desire
 
 // Epic cards
-extern Card hell_flame_enhanced;      // Hell Flame
-extern Card doomfall_enhanced;        // Doomfall
-extern Card curse_of_greed_enhanced;  // Curse of Greed
+extern Card inferno_overload;      // Hell Flame
+extern Card the_demons_due;        // Doomfall
+extern Card a_surfeit_of_wishes;  // Curse of Greed
 
 #endif
