@@ -843,13 +843,13 @@ void EnhancedBattleScreen(SDL_Renderer* ren, Player* p1, Player* p2) {
                     SDL_Rect epic_rect={50, HSCREEN-(300+i*70), 300, 50};
                     SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
                     SDL_RenderFillRect(ren, &epic_rect);
-                    WriteText(ren,p1->fable->epic[i].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+                    WriteText(ren,p1->fable->epic[i]->name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
                 }
             }else{
                 SDL_Rect epic_rect={50, HSCREEN-300, 300, 50};
                 SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
                 SDL_RenderFillRect(ren, &epic_rect);
-                WriteText(ren,p1->fable->epic[g_ctx->p1_epic_selected-1].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+                WriteText(ren,p1->fable->epic[g_ctx->p1_epic_selected-1]->name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
             }
         }
         // P1 epic indicator
@@ -904,13 +904,13 @@ void EnhancedBattleScreen(SDL_Renderer* ren, Player* p1, Player* p2) {
                     SDL_Rect epic_rect={WSCREEN-370, 280+(i*70), 300, 50};
                     SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
                     SDL_RenderFillRect(ren, &epic_rect);
-                    WriteText(ren,p2->fable->epic[i].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+                    WriteText(ren,p2->fable->epic[i]->name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
                 }
             }else{
                 SDL_Rect epic_rect={WSCREEN-370, 280, 300, 50};
                 SDL_SetRenderDrawColor(ren, 129, 41, 144, 255);
                 SDL_RenderFillRect(ren, &epic_rect);
-                WriteText(ren,p2->fable->epic[g_ctx->p2_epic_selected-1].name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
+                WriteText(ren,p2->fable->epic[g_ctx->p2_epic_selected-1]->name,(SDL_Color){255,255,255,255}, epic_rect.x+150, epic_rect.y+25,10);
             }
         }
         // P2 epic indicator
