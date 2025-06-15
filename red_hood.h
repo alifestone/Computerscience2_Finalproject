@@ -4,8 +4,8 @@
 void battle_setup(Player *p1, Player *p2,int starting);
 void BattleLane(SDL_Renderer *ren,Player *p1, Player *p2);
 extern Fable red_hood_fable;
-extern Card potshot;
-extern Card crackshot;
+extern Card pot_shot;
+extern Card crack_shot;
 extern Card overdrive_burn;
 extern Card sniper_shot;
 extern Card onboard_cache;
@@ -16,4 +16,5 @@ extern Card energy_shield;
 extern Card electrified_shield;
 extern Card omega_shield;
 extern Card unleashed_ballistics;
+extern Card hooded_system;
 #endif

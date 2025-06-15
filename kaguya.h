@@ -57,7 +57,7 @@ extern Card swift_reprisal;    // 懲戒時刻 (蛻變1)
 extern Card addled_echoes;          // 困惑的回聲
 extern Card bygone_echoes;           // 久遠的回響
 extern Card divine_echoes;          // 神性的召換
-extern Card blood_moonlight;        // 血色月光 (蛻變1)
+extern Card blood_moon;        // 血色月光 (蛻變1)
 
 // 移動卡
 extern Card focused_intent;  // 專注的自省

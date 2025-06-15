@@ -80,7 +80,7 @@ extern Card curiously_curious;
 extern Card off_with_her_head;
 extern Card its_showtime;
 extern Card wonderland;
-extern Card were_all_mad;
+extern Card were_all_mad_here;
 
 // EPIC 必殺卡
 extern Card important_date;
