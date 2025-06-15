@@ -11,15 +11,7 @@
 #include "match-girl.h"
 #include "snow_white.h"
 
-// 所有角色與對應 AI 函式
 extern Fable alice_fable, red_hood_fable, mulan_fable, snow_white_fable, kaguya_fable, match_girl_enhanced_fable;
-
-void ai_alice_turn(Player*, Player*, FableShop*);
-void ai_redhood_turn(Player*, Player*, FableShop*);
-void ai_mulan_turn(Player*, Player*, FableShop*);
-void ai_snowwhite_turn(Player*, Player*, FableShop*);
-void ai_kaguya_turn(Player*, Player*, FableShop*);
-void ai_match_girl_turn(Player*, Player*, FableShop*);
 
 int main() {
     srand(time(NULL));
@@ -29,28 +21,23 @@ int main() {
         &snow_white_fable, &kaguya_fable, &match_girl_enhanced_fable
     };
 
-    void (*ai_funcs[])(Player*, Player*, FableShop*) = {
-        ai_alice_turn, ai_redhood_turn, ai_mulan_turn,
-        ai_snowwhite_turn, ai_kaguya_turn, ai_match_girl_turn
+    const char *names[] = {
+        "Alice", "Red Hood", "Mulan", "Snow White", "Kaguya", "Match Girl"
     };
 
-    // 隨機選角，避免重複
     int idx1 = rand() % 6;
     int idx2;
     do {
         idx2 = rand() % 6;
     } while (idx2 == idx1);
 
-    // 建立玩家
     Player p1 = {0}, p2 = {0};
     p1.fable = fables[idx1];
-    p1.ai_func = ai_funcs[idx1];
     p1.health = p1.fable->health;
     p1.lane = 0;
     p1.energy = 4;
 
     p2.fable = fables[idx2];
-    p2.ai_func = ai_funcs[idx2];
     p2.health = p2.fable->health;
     p2.lane = 1;
     p2.energy = 5;
@@ -64,11 +51,27 @@ int main() {
     while (p1.health > 0 && p2.health > 0) {
         printf("\n=== Round %d ===\n", round++);
         printf("[AI 1] %s's turn (HP: %d, EN: %d)\n", p1.fable->name, p1.health, p1.energy);
-        p1.ai_func(&p1, &p2, &shop);
+
+        if (strcmp(p1.fable->name, "Alice") == 0) ai_alice_turn(&p1, &p2, &shop);
+        else if (strcmp(p1.fable->name, "Red Hood") == 0) ai_redhood_turn(&p1, &p2, &shop);
+        else if (strcmp(p1.fable->name, "Mulan") == 0) ai_mulan_turn(&p1, &p2, &shop);
+        else if (strcmp(p1.fable->name, "Snow White") == 0) ai_snowwhite_turn(&p1, &p2, &shop);
+        else if (strcmp(p1.fable->name, "Kaguya") == 0) ai_kaguya_turn(&p1, &p2, &shop);
+        else if (strcmp(p1.fable->name, "Match Girl") == 0) ai_match_girl_turn(&p1, &p2, &shop);
+
         if (p2.health <= 0) break;
 
         printf("[AI 2] %s's turn (HP: %d, EN: %d)\n", p2.fable->name, p2.health, p2.energy);
-        p2.ai_func(&p2, &p1, &shop);
+
+        if (strcmp(p2.fable->name, "Alice") == 0) ai_alice_turn(&p2, &p1, &shop);
+        else if (strcmp(p2.fable->name, "Red Hood") == 0) ai_redhood_turn(&p2, &p1, &shop);
+        else if (strcmp(p2.fable->name, "Mulan") == 0) ai_mulan_turn(&p2, &p1, &shop);
+        else if (strcmp(p2.fable->name, "Snow White") == 0) ai_snowwhite_turn(&p2, &p1, &shop);
+        else if (strcmp(p2.fable->name, "Kaguya") == 0) ai_kaguya_turn(&p2, &p1, &shop);
+        else if (strcmp(p2.fable->name, "Match Girl") == 0) ai_match_girl_turn(&p2, &p1, &shop);
+
+        printf("\nPress Enter to continue to next round...");
+        getchar();
     }
 
     printf("\n🎉 Winner: %s\n", (p1.health > 0) ? p1.fable->name : p2.fable->name);
