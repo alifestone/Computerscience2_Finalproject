@@ -273,7 +273,7 @@ void change_game_state(GameState new_state) {
     
     switch (new_state) {
         case GAME_STATE_BATTLE_INIT:
-            g_ctx->current_player = rand() % 2;
+            g_ctx->current_player = 1;//rand() % 2;
             g_ctx->turn_number = 1;
             printf("Battle initialized, starting player: %d\n", g_ctx->current_player);
             change_game_state(GAME_STATE_TURN_START);
@@ -332,7 +332,7 @@ void start_turn(int player_id) {
             snow_white_turn_start(player); // Commented out until proper implementation
             printf("Snow White turn start\n");
         } else if (strcmp(player->fable->name, "Match Girl") == 0) {
-            match_girl_turn_start(player); // Commented out until proper implementation
+            match_girl_enhanced_turn_start(player); // Commented out until proper implementation
             printf("Match Girl turn start\n");
         }
     }
