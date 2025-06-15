@@ -12,43 +12,50 @@ extern Fable kaguya_fable;
 extern Fable snow_white;
 
 // 引用 alice.c 中的卡牌
-extern Card opening_game;
-extern Card twisting_game;
-extern Card controlling_game;
-extern Card magic_trick;
-extern Card mental_illusion;
-extern Card hat_trick;
-extern Card strange_agility;
-extern Card strange_stealth;
-extern Card strange_weird;
-extern Card off_with_head;
-extern Card start_performance;
-extern Card wonderland_descent;
-extern Card all_mad_here;
-extern Card endless_party;
-extern Card wonderful_day;
-extern Card game_control;
+extern Card deal_the_cards;
+extern Card cut_the_cards;
+extern Card rig_the_cards;
 
+// 防禦卡
+extern Card magic_trick;
+extern Card mind_trick;
+extern Card hat_trick;
+
+// 移動卡
+extern Card curiously_agile;
+extern Card curiously_covert;
+extern Card curiously_curious;
+
+// TWIST 蛻變卡
+extern Card off_with_her_head;
+extern Card its_showtime;
+extern Card wonderland;
+extern Card were_all_mad_here;
+
+// EPIC 必殺卡
+extern Card important_date;
+extern Card frabjous_day;
+extern Card the_games_afoot;
 
 
 // === Alice 專用購買牌庫（依照購買優先順序）===
 Card *alice_deck[] = {
-    &opening_game,
-    &twisting_game,
-    &controlling_game,
+    &important_date,
+    &frabjous_day,
+    &the_games_afoot,
+    &off_with_her_head,
+    &its_showtime,
+    &wonderland,
+    &were_all_mad_here,
+    &curiously_agile,
+    &curiously_covert,
+    &deal_the_cards,
+    &cut_the_cards,
+    &rig_the_cards,
+    &curiously_curious,
     &magic_trick,
-    &mental_illusion,
-    &hat_trick,
-    &strange_agility,
-    &strange_stealth,
-    &strange_weird,
-    &off_with_head,
-    &start_performance,
-    &wonderland_descent,
-    &all_mad_here,
-    &endless_party,
-    &wonderful_day,
-    &game_control
+    &mind_trick,
+    &hat_trick
 
 };
 int alice_deck_size = sizeof(alice_deck) / sizeof(Card*);
@@ -137,37 +144,34 @@ void ai_alice_turn(Player *self, Player *enemy, FableShop *shop) {
 }
 
 //red hood
-extern Card pot_shot_enhanced;
-extern Card crack_shot_enhanced;
-extern Card overdrive_burn_enhanced;
-extern Card sniper_shot_enhanced;
-extern Card onboard_cache_enhanced;
-extern Card unleashed_firepower_enhanced;
-// extern Card transformed_senses;
-extern Card unleashed_fury_enhanced;
-extern Card energy_shield_enhanced;
-extern Card electrified_shield_enhanced;
-extern Card omega_shield_enhanced;
-extern Card unleashed_ballistics_enhanced;
-extern Card hungry_wolf_devour;
-extern Card system_intrusion;
-extern Card revenge_rain;
+extern Card pot_shot;
+extern Card crack_shot;
+extern Card overdrive_burn;
+extern Card sniper_shot;
+extern Card onboard_cache;
+extern Card unleashed_firepower;
+extern Card transformed_senses;
+extern Card unleashed_fury;
+extern Card energy_shield;
+extern Card electrified_shield;
+extern Card omega_shield;
+extern Card unleashed_ballistics;
+extern Card hooded_system;
 
 Card *redhood_deck[] = {
-    &pot_shot_enhanced,
-    &crack_shot_enhanced,
-    &overdrive_burn_enhanced,
-    &sniper_shot_enhanced,
-    &onboard_cache_enhanced,
-    &unleashed_firepower_enhanced,
-    &unleashed_fury_enhanced,
-    &energy_shield_enhanced,
-    &electrified_shield_enhanced,
-    &omega_shield_enhanced,
-    &unleashed_ballistics_enhanced,
-    &hungry_wolf_devour,
-    &system_intrusion,
-    &revenge_rain
+    &hooded_system,
+    &unleashed_ballistics,
+    &omega_shield,
+    &electrified_shield,
+    &energy_shield,
+    &unleashed_fury,
+    &transformed_senses,
+    &unleashed_firepower,
+    &pot_shot,
+    &crack_shot,
+    &overdrive_burn,
+    &sniper_shot,
+    &onboard_cache
 };
 int redhood_deck_size = sizeof(redhood_deck) / sizeof(Card*);
 Card* redhood_choose_card(Player *self, Player *enemy) {
@@ -239,40 +243,46 @@ void ai_redhood_turn(Player *self, Player *enemy, FableShop *shop) {
 }
 
 //mulan
-extern Card underestimate;        // 不容小覷 (等級一)
-extern Card unstoppable ;         // 勢不可擋 (等級二)
-extern Card indestructible;          // 堅不可摧 (等級三)
-extern Card calm_control;      // 氣慣全身 (蛻變1)
-extern Card soft_overcome_hard;   // 暴風前夕 (蛻變2) - 攻擊版
-extern Card weak_defeat_strong;       // 以靜制動 (等級一)
-extern Card never_retreat;         // 以柔克剛 (等級二)
-extern Card no_mercy;     // 以弱勝強 (等級三)
-extern Card never_forgive;       // 主宰命運 (蛻變1)
-extern Card energy_throughout;   // 暴風前夕 (蛻變2) - 防禦版
-extern Card storm_gathering;        // 永不退縮 (等級一)
-extern Card face_chaos;        // 毫不留情 (等級二)
-extern Card thunder_strike;          // 絕不饒恕 (等級三)
-extern Card soaring_spirit;        // 長驅直入 (蛻變1)
-// extern Card baofengqianxi_mov;   // 暴風前夕 (蛻變2) - 移動版
-// extern Card qichongyunxiao;      // 氣沖雲霄
-// extern Card zhimianhuandun;      // 直面混沌
-// extern Card leitingyiji;         // 雷霆一擊
+extern Card underestimated;        // 不容小覷 (等級一)
+extern Card undeniable;         // 勢不可擋 (等級二)
+extern Card undiminished;          // 堅不可摧 (等級三)
+extern Card channeled_qi;      // 氣慣全身 (蛻變1)
+extern Card gathering_storm;   // 暴風前夕 (蛻變2) - 攻擊版
+
+// 防禦卡牌宣告
+extern Card diverted_fire;       // 以靜制動 (等級一)
+extern Card diverted_might;         // 以柔克剛 (等級二)
+extern Card diverted_wrath;     // 以弱勝強 (等級三)
+extern Card evading_fate;       // 主宰命運 (蛻變1)
+
+// 移動卡牌宣告
+extern Card no_retreat;        // 永不退縮 (等級一)
+extern Card no_quarter;        // 毫不留情 (等級二)
+extern Card no_mercy;          // 絕不饒恕 (等級三)
+extern Card enlightened_assault;        // 長驅直入 (蛻變1)
+
+// 必殺技宣告
+extern Card legends_call;      // 氣沖雲霄
+extern Card confronting_chaos;      // 直面混沌
+extern Card honors_thunder;         // 雷霆一擊
 
 Card *mulan_deck[] = {
-    &underestimate,        // 不容小覷 (等級一)
-    &unstoppable ,         // 勢不可擋 (等級二)
-    &indestructible,          // 堅不可摧 (等級三)
-    &calm_control,      // 氣慣全身 (蛻變1)
-    &soft_overcome_hard,   // 暴風前夕 (蛻變2) - 攻擊版
-    &weak_defeat_strong,       // 以靜制動 (等級一)
-    &never_retreat,         // 以柔克剛 (等級二)
-    &no_mercy,     // 以弱勝強 (等級三)
-    &never_forgive,       // 主宰命運 (蛻變1)
-    &energy_throughout,   // 暴風前夕 (蛻變2) - 防禦版
-    &storm_gathering,        // 永不退縮 (等級一)
-    &face_chaos,        // 毫不留情 (等級二)
-    &thunder_strike,          // 絕不饒恕 (等級三)
-    &soaring_spirit     
+    &legends_call,        // 不容小覷 (等級一)
+    &confronting_chaos ,         // 勢不可擋 (等級二)
+    &honors_thunder,          // 堅不可摧 (等級三)
+    &no_retreat,      // 氣慣全身 (蛻變1)
+    &no_quarter,   // 暴風前夕 (蛻變2) - 攻擊版
+    &no_mercy,       // 以靜制動 (等級一)
+    &enlightened_assault,         // 以柔克剛 (等級二)
+    &underestimated,     // 以弱勝強 (等級三)
+    &undeniable,       // 主宰命運 (蛻變1)
+    &undiminished,   // 暴風前夕 (蛻變2) - 防禦版
+    &channeled_qi,        // 永不退縮 (等級一)
+    &gathering_storm,        // 毫不留情 (等級二)
+    &diverted_fire,          // 絕不饒恕 (等級三)
+    &diverted_might,
+    &diverted_wrath,
+    &evading_fate     
 };
 int mulan_deck_size = sizeof(mulan_deck) / sizeof(Card*);
 
@@ -346,44 +356,62 @@ void ai_mulan_turn(Player *self, Player *enemy, FableShop *shop) {
 // extern Card poison1;        // 1級中毒牌
 // extern Card poison2;        // 2級中毒牌  
 // extern Card poison3;        // 3級中毒牌
+
+/**
+ * 中毒牌庫
+ * 存放所有可用的中毒牌，是白雪公主機制的核心資源
+ */
 extern Deck poison_deck;
-extern Card crystal_fragment;//
-extern Card crystal_vortex;//
-extern Card crystal_storm;//
-extern Card crystal_coffin;//
-extern Card pure_poison;//
-extern Card tainted_blessing;//
-extern Card tainted_feast;//
-extern Card tainted_revelry;//
-// extern Card fallen_calamity;
-extern Card broken_fantasy;//
-extern Card broken_reality;//
-extern Card broken_destiny;//
-// extern Card toxic_erosion;
-extern Card seven_snakes_wrath;//
-extern Card mirror_rain;//
-extern Card brewing_disaster;//
-extern Card corrupted_banquet;
+
+// 攻擊技能卡聲明區域
+extern Card shard_storm;
+extern Card shard_tempest;
+extern Card shard_vortex;
+// 攻擊系統蛻變牌
+extern Card crystal_coffin;
+extern Card poisoned_purity;
+
+// 防禦技能卡聲明區域
+extern Card tainted_offering;
+extern Card tainted_feast;
+extern Card tainted_maelstrom;
+// 防禦系統蛻變牌
+extern Card corrupted_destiny;
+
+// 移動技能卡聲明區域
+
+extern Card shattered_passage;
+extern Card shattered_truth;
+extern Card shattered_destiny;
+
+// 移動系統蛻變牌
+extern Card venomous_turn;
+
+// 必殺技聲明區域
+extern Card seven_serpents;
+extern Card rain_of_mirrors;
+extern Card brewing_destruction;
 
 Card *snow_deck[] = {
     // &poison1,        // 1級中毒牌
     // &poison2,        // 2級中毒牌  
     // &poison3,        // 3級中毒牌
-    &crystal_fragment,
-    &crystal_vortex,
-    &crystal_storm,
+    &brewing_destruction,
+    &rain_of_mirrors,
+    &seven_serpents,
+    &venomous_turn,
+    &shattered_passage,
+    &shattered_destiny,
+    &shattered_truth,
+    &corrupted_destiny,
+    &shard_storm,
+    &shard_tempest,
+    &shard_vortex,
     &crystal_coffin,
-    &pure_poison,
-    &tainted_blessing,
+    &poisoned_purity,
     &tainted_feast,
-    &tainted_revelry,
-    &broken_fantasy,
-    &broken_reality,
-    &broken_destiny,
-    &seven_snakes_wrath,
-    &mirror_rain,
-    &brewing_disaster,
-    &corrupted_banquet
+    &tainted_maelstrom,
+    &tainted_offering
 };
 int snow_deck_size = sizeof(snow_deck) / sizeof(Card*);
 
@@ -461,42 +489,49 @@ void ai_snowwhite_turn(Player *self, Player *enemy, FableShop *shop) {
 }
 
 //kaguya
-extern Card enlightenment_light;       // 
-extern Card enlightenment_glory;      //  
-extern Card enlightenment_avatar;     // 
-extern Card punishment_moment;    // 懲戒時刻 (蛻變1
-extern Card confusing_echo;          // 
-extern Card ancient_resonance;           // 久遠的回響
-extern Card divine_summon;          // 
-extern Card blood_moon;        // 
-extern Card focused_introspection;  // 
-extern Card enlightened_resolve;    // 
-extern Card painful_purification;   // 
-// extern Card spiritual_instinct;     // 靈性本能 (蛻變1)
-extern Card moonlight_contemplation;   //
-extern Card scorching_bamboo;   // 
-extern Card destined_judgment;      // 
-extern Card restless_blood;     // 
-extern Card master_destiny;
+extern Card ascendant_light;       // 領悟的光芒
+extern Card ascendant_glory;      // 領悟的榮耀  
+extern Card ascendant_avatar;     // 領悟的化身
+extern Card swift_reprisal;    // 懲戒時刻 (蛻變1)
+
+// 防禦卡
+extern Card addled_echoes;          // 困惑的回聲
+extern Card bygone_echoes;           // 久遠的回響
+extern Card divine_echoes;          // 神性的召換
+extern Card blood_moon;        // 血色月光 (蛻變1)
+
+// 移動卡
+extern Card focused_intent;  // 專注的自省
+extern Card focused_resolve;    // 頓悟的決心
+extern Card focused_ascent;   // 痛徹的淨化
+extern Card uncanny_instinct;     // 靈性本能 (蛻變1)
+
+// 共同蛻變卡
+extern Card reflective_repose;   // 月下沉思 (蛻變2)
+
+// EPIC 必殺卡
+extern Card blazing_shinai;   // 炙熱的竹刀
+extern Card judgement_arising;      // 注定的審判
+extern Card impulsive_onslaught;     // 躁動的血性
+
 
 Card *kaguya_deck[] = {
-    &enlightenment_light,       // 
-    &enlightenment_glory,      //  
-    &enlightenment_avatar,     // 
-    &punishment_moment,    // 懲戒時刻 (蛻變1
-    &confusing_echo,          // 
-    &ancient_resonance,           // 久遠的回響
-    &divine_summon,          // 
-    &blood_moon,        // 
-    &focused_introspection,  // 
-    &enlightened_resolve,    // 
-    &painful_purification,   // 
-    // &spiritual_instinct,     // 靈性本能 (蛻變1)
-    &moonlight_contemplation,   //
-    &scorching_bamboo,   // 
-    &destined_judgment,      // 
-    &restless_blood,     // 
-    &master_destiny
+    &impulsive_onslaught,       // 
+    &judgement_arising,      //  
+    &blazing_shinai,     // 
+    &reflective_repose,    // 懲戒時刻 (蛻變1
+    &focused_intent,          // 
+    &focused_resolve,           // 久遠的回響
+    &focused_ascent,          // 
+    &uncanny_instinct,        // 
+    &ascendant_light,  // 
+    &ascendant_glory,    // 
+    &ascendant_avatar,   // 
+    &swift_reprisal,   //
+    &addled_echoes,   // 
+    &bygone_echoes,      // 
+    &divine_echoes,     // 
+    &blood_moon
 };
 int kaguya_deck_size = sizeof(kaguya_deck) / sizeof(Card*);
 
@@ -569,44 +604,40 @@ void ai_kaguya_turn(Player *self, Player *enemy, FableShop *shop) {
     printf("[輝夜AI] 回合結束\n");
 }
 // Match Girl
-extern Card phantom_wish_enhanced;    // Phantom Wish
-extern Card secret_desire_enhanced;   // Secret Desire
-extern Card endless_luxury_enhanced;  // Endless Luxury
-extern Card devil_sacrifice_enhanced; // Devil's Sacrifice
-extern Card devil_bet_enhanced;       // Devil's Bet
-extern Card devil_contract_enhanced;  // Devil's Contract
-extern Card weightless_soul_enhanced; // Weightless Soul
-extern Card indebted_soul_enhanced;   // Indebted Soul
-extern Card broken_soul_enhanced;     // Broken Soul
-// extern Card ritual_of_pain;           // Ritual of Pain
-// extern Card flame_trick;              // Flame Trick
-// extern Card torment_of_fate;          // Torment of Fate
-// extern Card indulgent_desire;         // Indulgent Desire
-// extern Card devil_gaze;               // Devil Gaze
-// extern Card desire_trick;             // Desire Trick
-extern Card hell_flame_enhanced;      /// Hell Flame
-extern Card doomfall_enhanced;        /// Doomfall
-extern Card curse_of_greed_enhanced;  /// Curse of Greed
+extern Card make_a_wish;    // Phantom Wish
+extern Card regret_a_wish;   // Secret Desire
+extern Card requite_a_wish;  // Endless Luxury
+extern Card diabolical_offer; // Devil's Sacrifice
+extern Card diabolical_gamble;       // Devil's Bet
+extern Card diabolical_deal;  // Devil's Contract
+extern Card your_soul_weighed; // Weightless Soul
+extern Card your_soul_wanting;   // Indebted Soul
+extern Card your_soul_ravaged;     // Broken Soul
+extern Card ritual_of_pain;           // Ritual of Pain
+extern Card inflamed_craving;              // Flame Trick
+extern Card after_all_ive_given;          // Torment of Fate
+extern Card playing_with_fire;         // Indulgent Desire
+extern Card inferno_overload;      // Hell Flame
+extern Card the_demons_due;        // Doomfall
+extern Card a_surfeit_of_wishes;  // Curse of Greed
 
 Card *mg_deck[] = {
-    &phantom_wish_enhanced,    // Phantom Wish
-    &secret_desire_enhanced,   // Secret Desire
-    &endless_luxury_enhanced,  // Endless Luxury
-    &devil_sacrifice_enhanced, // Devil's Sacrifice
-    &devil_bet_enhanced,       // Devil's Bet
-    &devil_contract_enhanced,  // Devil's Contract
-    &weightless_soul_enhanced, // Weightless Soul
-    &indebted_soul_enhanced,   // Indebted Soul
-    &broken_soul_enhanced,     // Broken Soul
-    // &ritual_of_pain,           // Ritual of Pain
-    // &flame_trick,              // Flame Trick
-    // &torment_of_fate,          // Torment of Fate
-    // &indulgent_desire,         // Indulgent Desire
-    // &devil_gaze,               // Devil Gaze
-    // &desire_trick,             // Desire Trick
-    &hell_flame_enhanced,      // Hell Flame
-    &doomfall_enhanced,        // Doomfall
-    &curse_of_greed_enhanced
+    &a_surfeit_of_wishes,    // Phantom Wish
+    &the_demons_due,   // Secret Desire
+    &inferno_overload,  // Endless Luxury
+    &playing_with_fire, // Devil's Sacrifice
+    &after_all_ive_given,       // Devil's Bet
+    &inflamed_craving,  // Devil's Contract
+    &ritual_of_pain, // Weightless Soul
+    &your_soul_ravaged,   // Indebted Soul
+    &your_soul_wanting,     // Broken Soul
+    &your_soul_weighed,
+    &make_a_wish,      // Hell Flame
+    &regret_a_wish,        // Doomfall
+    &requite_a_wish,
+    &diabolical_deal,
+    &diabolical_gamble,
+    &diabolical_offer
 };
 int mg_deck_size = sizeof(mg_deck) / sizeof(Card*);
 
